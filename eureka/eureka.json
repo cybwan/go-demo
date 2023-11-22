@@ -1,0 +1,169 @@
+{
+  "BOOKBUYER": {
+    "name": "BOOKBUYER",
+    "instance": [
+      {
+        "instanceId": "bookbuyer:5e0cdcc5f702d04e5d88a8e6632ba46f",
+        "hostName": "10.244.2.6",
+        "app": "BOOKBUYER",
+        "ipAddr": "10.244.2.6",
+        "vipAddress": "bookbuyer",
+        "secureVipAddress": "bookbuyer",
+        "status": "UP",
+        "overriddenstatus": "UNKNOWN",
+        "homePageUrl": "http://10.244.2.6:14001/",
+        "statusPageUrl": "http://10.244.2.6:14001/actuator/info",
+        "healthCheckUrl": "http://10.244.2.6:14001/actuator/health",
+        "countryId": 1,
+        "dataCenterInfo": {
+          "name": "MyOwn",
+          "@class": "com.netflix.appinfo.MyDataCenterInfo"
+        },
+        "leaseInfo": {
+          "renewalIntervalInSecs": 30,
+          "durationInSecs": 90,
+          "registrationTimestamp": 1700471438904,
+          "lastRenewalTimestamp": 1700471438904,
+          "evictionTimestamp": 0,
+          "serviceUpTimestamp": 1700471438397
+        },
+        "metadata": {
+          "management.port": 14001,
+          "version": "v1"
+        },
+        "port": {
+          "$": "14001",
+          "@enabled": "true"
+        },
+        "securePort": {
+          "$": "443",
+          "@enabled": "false"
+        }
+      }
+    ]
+  },
+  "BOOKSTORE": {
+    "name": "BOOKSTORE",
+    "instance": [
+      {
+        "instanceId": "bookstore:ae1e59d33e8ea0af1c7a10b60442adf9",
+        "hostName": "10.244.1.6",
+        "app": "BOOKSTORE",
+        "ipAddr": "10.244.1.6",
+        "vipAddress": "bookstore",
+        "secureVipAddress": "bookstore",
+        "status": "UP",
+        "overriddenstatus": "UNKNOWN",
+        "homePageUrl": "http://10.244.1.6:14001/",
+        "statusPageUrl": "http://10.244.1.6:14001/actuator/info",
+        "healthCheckUrl": "http://10.244.1.6:14001/actuator/health",
+        "countryId": 1,
+        "dataCenterInfo": {
+          "name": "MyOwn",
+          "@class": "com.netflix.appinfo.MyDataCenterInfo"
+        },
+        "leaseInfo": {
+          "renewalIntervalInSecs": 30,
+          "durationInSecs": 90,
+          "registrationTimestamp": 1700471406941,
+          "lastRenewalTimestamp": 1700471520898,
+          "evictionTimestamp": 0,
+          "serviceUpTimestamp": 1700471406427
+        },
+        "metadata": {
+          "management.port": 14001,
+          "version": "v1"
+        },
+        "port": {
+          "$": "14001",
+          "@enabled": "true"
+        },
+        "securePort": {
+          "$": "443",
+          "@enabled": "false"
+        }
+      },
+      {
+        "instanceId": "bookstore:192b5b9250e84c301e108840b3488484",
+        "hostName": "10.244.2.5",
+        "app": "BOOKSTORE",
+        "ipAddr": "10.244.2.5",
+        "vipAddress": "bookstore",
+        "secureVipAddress": "bookstore",
+        "status": "UP",
+        "overriddenstatus": "UNKNOWN",
+        "homePageUrl": "http://10.244.2.5:14001/",
+        "statusPageUrl": "http://10.244.2.5:14001/actuator/info",
+        "healthCheckUrl": "http://10.244.2.5:14001/actuator/health",
+        "countryId": 1,
+        "dataCenterInfo": {
+          "name": "MyOwn",
+          "@class": "com.netflix.appinfo.MyDataCenterInfo"
+        },
+        "leaseInfo": {
+          "renewalIntervalInSecs": 30,
+          "durationInSecs": 90,
+          "registrationTimestamp": 1700471405916,
+          "lastRenewalTimestamp": 1700471549547,
+          "evictionTimestamp": 0,
+          "serviceUpTimestamp": 1700471405408
+        },
+        "metadata": {
+          "management.port": 14001,
+          "version": "v2"
+        },
+        "port": {
+          "$": "14001",
+          "@enabled": "true"
+        },
+        "securePort": {
+          "$": "443",
+          "@enabled": "false"
+        }
+      }
+    ]
+  },
+  "BOOKWAREHOUSE": {
+    "name": "BOOKWAREHOUSE",
+    "instance": [
+      {
+        "instanceId": "bookwarehouse:34113181a8e0b90585853700636a6db1",
+        "hostName": "10.244.1.5",
+        "app": "BOOKWAREHOUSE",
+        "ipAddr": "10.244.1.5",
+        "vipAddress": "bookwarehouse",
+        "secureVipAddress": "bookwarehouse",
+        "status": "UP",
+        "overriddenstatus": "UNKNOWN",
+        "homePageUrl": "http://10.244.1.5:14001/",
+        "statusPageUrl": "http://10.244.1.5:14001/actuator/info",
+        "healthCheckUrl": "http://10.244.1.5:14001/actuator/health",
+        "countryId": 1,
+        "dataCenterInfo": {
+          "name": "MyOwn",
+          "@class": "com.netflix.appinfo.MyDataCenterInfo"
+        },
+        "leaseInfo": {
+          "renewalIntervalInSecs": 30,
+          "durationInSecs": 90,
+          "registrationTimestamp": 1700471396070,
+          "lastRenewalTimestamp": 1700471540181,
+          "evictionTimestamp": 0,
+          "serviceUpTimestamp": 1700471395401
+        },
+        "metadata": {
+          "management.port": 14001,
+          "version": "v1"
+        },
+        "port": {
+          "$": "14001",
+          "@enabled": "true"
+        },
+        "securePort": {
+          "$": "443",
+          "@enabled": "false"
+        }
+      }
+    ]
+  }
+}

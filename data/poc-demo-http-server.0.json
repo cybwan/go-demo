@@ -1,0 +1,109 @@
+{
+ "Node": {
+  "ID": "62386f1e-57cf-577a-4ae3-5e83fd8499da",
+  "Node": "ubuntu20-ali-191",
+  "Address": "192.168.10.91",
+  "Datacenter": "dc1",
+  "TaggedAddresses": {
+   "lan": "192.168.10.91",
+   "wan": "192.168.10.91"
+  },
+  "Meta": {
+   "consul-network-segment": ""
+  },
+  "CreateIndex": 5,
+  "ModifyIndex": 6
+ },
+ "Service": {
+  "ID": "poc-demo-http-server-769d17a4df06c44d3d27d9b678d864c4",
+  "Service": "poc-demo-http-server",
+  "Tags": [
+   "version=v2",
+   "secure=false"
+  ],
+  "Meta": null,
+  "Port": 8181,
+  "Address": "192.168.10.47",
+  "Weights": {
+   "Passing": 1,
+   "Warning": 1
+  },
+  "EnableTagOverride": false,
+  "CreateIndex": 8705,
+  "ModifyIndex": 8705,
+  "Proxy": {
+   "MeshGateway": {},
+   "Expose": {}
+  },
+  "Connect": {}
+ },
+ "Checks": [
+  {
+   "Node": "ubuntu20-ali-191",
+   "CheckID": "serfHealth",
+   "Name": "Serf Health Status",
+   "Status": "passing",
+   "Notes": "",
+   "Output": "Agent alive and reachable",
+   "ServiceID": "",
+   "ServiceName": "",
+   "ServiceTags": [],
+   "Type": "",
+   "ExposedPort": 0,
+   "Definition": {
+    "Interval": "0s",
+    "Timeout": "0s",
+    "DeregisterCriticalServiceAfter": "0s",
+    "HTTP": "",
+    "Header": null,
+    "Method": "",
+    "Body": "",
+    "TLSServerName": "",
+    "TLSSkipVerify": false,
+    "TCP": "",
+    "TCPUseTLS": false,
+    "UDP": "",
+    "GRPC": "",
+    "OSService": "",
+    "GRPCUseTLS": false
+   },
+   "CreateIndex": 5,
+   "ModifyIndex": 5
+  },
+  {
+   "Node": "ubuntu20-ali-191",
+   "CheckID": "service:poc-demo-http-server-769d17a4df06c44d3d27d9b678d864c4",
+   "Name": "Service 'poc-demo-http-server' check",
+   "Status": "passing",
+   "Notes": "",
+   "Output": "HTTP GET http://192.168.10.47:8181/health: 200  Output: {\"status\":\"UP\"}",
+   "ServiceID": "poc-demo-http-server-769d17a4df06c44d3d27d9b678d864c4",
+   "ServiceName": "poc-demo-http-server",
+   "ServiceTags": [
+    "version=v2",
+    "secure=false"
+   ],
+   "Type": "",
+   "ExposedPort": 0,
+   "Definition": {
+    "Interval": "0s",
+    "Timeout": "0s",
+    "DeregisterCriticalServiceAfter": "0s",
+    "HTTP": "",
+    "Header": null,
+    "Method": "",
+    "Body": "",
+    "TLSServerName": "",
+    "TLSSkipVerify": false,
+    "TCP": "",
+    "TCPUseTLS": false,
+    "UDP": "",
+    "GRPC": "",
+    "OSService": "",
+    "GRPCUseTLS": false
+   },
+   "CreateIndex": 8705,
+   "ModifyIndex": 9227
+  }
+ ]
+}
