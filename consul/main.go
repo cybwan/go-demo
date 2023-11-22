@@ -172,20 +172,20 @@ func main() {
 	//}
 	initA()
 
-	kubeClient := getKubeClient()
+	//kubeClient := getKubeClient()
 
 	// Create the context we'll use to cancel everything
 	ctx, cancelF := context.WithCancel(context.Background())
 
-	serviceList, err := kubeClient.CoreV1().Services(metav1.NamespaceAll).List(ctx, metav1.ListOptions{})
-	if err != nil {
-		fmt.Println(err.Error())
-		os.Exit(-1)
-	} else {
-		for _, v := range serviceList.Items {
-			fmt.Println(v.Name)
-		}
-	}
+	//serviceList, err := kubeClient.CoreV1().Services(metav1.NamespaceAll).List(ctx, metav1.ListOptions{})
+	//if err != nil {
+	//	fmt.Println(err.Error())
+	//	os.Exit(-1)
+	//} else {
+	//	for _, v := range serviceList.Items {
+	//		fmt.Println(v.Name)
+	//	}
+	//}
 
 	syncer := &ConsulSyncer{
 		Log:                     logger.Named("to-consul/sink"),
@@ -205,7 +205,7 @@ func main() {
 		time.Sleep(5 * time.Second)
 		// Sync
 		syncer.Sync([]*api.CatalogRegistration{
-			testRegistration(ConsulSyncNodeName, "bar", "default"),
+			testRegistration(ConsulSyncNodeName, "bookwarehouse", "default"),
 		})
 
 	}()
@@ -254,7 +254,8 @@ func testRegistration(node, service, k8sSrcNamespace string) *api.CatalogRegistr
 			ConsulK8SNS:     k8sSrcNamespace,
 		},
 	}
-	agentService.Port = 8080
+	agentService.Port = 14001
+	agentService.Address = "192.168.127.91"
 
 	check := &api.AgentCheck{
 		Node:      node,
@@ -273,7 +274,7 @@ func testRegistration(node, service, k8sSrcNamespace string) *api.CatalogRegistr
 
 	return &api.CatalogRegistration{
 		Node:           node,
-		Address:        "127.0.0.2",
+		Address:        "192.168.127.91",
 		NodeMeta:       map[string]string{ConsulSourceKey: TestConsulK8STag},
 		SkipNodeUpdate: true,
 		Service:        &agentService,

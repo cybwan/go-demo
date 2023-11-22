@@ -12,7 +12,7 @@ import (
 	"time"
 
 	mapset "github.com/deckarep/golang-set"
-	"github.com/hashicorp/go-hclog"
+	hclog "github.com/hashicorp/go-hclog"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/cybwan/go-demo/catalog"
@@ -192,7 +192,7 @@ func main() {
 		allowSet = mapset.NewSet(flagK8SSourceNamespace)
 	}
 
-	allowSet.Add("httpbin")
+	allowSet.Add("bookwarehouse")
 	ready = true
 
 	// Create the context we'll use to cancel everything
