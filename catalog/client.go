@@ -12,17 +12,17 @@ import (
 )
 
 var (
-	discoveryClient *DiscoveryClient
+	discoveryClient *ConsulDiscoveryClient
 	consulclient    *api.Client
 	kubeclient      *kubernetes.Clientset
 )
 
-type DiscoveryClient struct {
+type ConsulDiscoveryClient struct {
 	consulClient *api.Client
 }
 
 // Service is used to query catalog entries for a given service
-func (dc *DiscoveryClient) Service(service, tag string, q *QueryOptions) ([]*CatalogService, error) {
+func (dc *ConsulDiscoveryClient) Service(service, tag string, q *QueryOptions) ([]*CatalogService, error) {
 	// Set up query options
 	opts := api.QueryOptions{}
 	opts.AllowStale = q.AllowStale
@@ -42,7 +42,7 @@ func (dc *DiscoveryClient) Service(service, tag string, q *QueryOptions) ([]*Cat
 	return catalogServices, nil
 }
 
-func (dc *DiscoveryClient) NodeServiceList(node string, q *QueryOptions) (*CatalogNodeServiceList, error) {
+func (dc *ConsulDiscoveryClient) NodeServiceList(node string, q *QueryOptions) (*CatalogNodeServiceList, error) {
 	nodeServices, meta, err := dc.consulClient.Catalog().NodeServiceList(node, q.toConsul())
 	if err != nil {
 		return nil, err
@@ -56,26 +56,26 @@ func (dc *DiscoveryClient) NodeServiceList(node string, q *QueryOptions) (*Catal
 	return nodeServiceList, nil
 }
 
-func (dc *DiscoveryClient) Deregister(dereg *CatalogDeregistration) error {
+func (dc *ConsulDiscoveryClient) Deregister(dereg *CatalogDeregistration) error {
 	_, err := dc.consulClient.Catalog().Deregister(dereg.toConsul(), nil)
 	return err
 }
 
-func (dc *DiscoveryClient) Register(reg *CatalogRegistration) error {
+func (dc *ConsulDiscoveryClient) Register(reg *CatalogRegistration) error {
 	_, err := dc.consulClient.Catalog().Register(reg.toConsul(), nil)
 	return err
 }
 
-// EnsureExists ensures a Consul namespace with name ns exists. If it doesn't,
+// EnsureNamespaceExists ensures a Consul namespace with name ns exists. If it doesn't,
 // it will create it and set crossNSACLPolicy as a policy default.
 // Boolean return value indicates if the namespace was created by this call.
-func (dc *DiscoveryClient) EnsureExists(ns string, crossNSAClPolicy string) (bool, error) {
+func (dc *ConsulDiscoveryClient) EnsureNamespaceExists(ns string, crossNSAClPolicy string) (bool, error) {
 	return namespaces.EnsureExists(dc.consulClient, ns, crossNSAClPolicy)
 }
 
-func getDiscoveryClient() *DiscoveryClient {
+func GetDiscoveryClient() *ConsulDiscoveryClient {
 	if discoveryClient == nil {
-		discoveryClient = new(DiscoveryClient)
+		discoveryClient = new(ConsulDiscoveryClient)
 		c := api.DefaultConfig()
 		c.Address = "127.0.0.1:8500"
 		discoveryClient.consulClient, _ = api.NewClient(c)

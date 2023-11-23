@@ -205,3 +205,11 @@ func (qopts *QueryOptions) toConsul() *api.QueryOptions {
 	opts.Filter = qopts.Filter
 	return opts
 }
+
+type ServiceDiscoveryClient interface {
+	NodeServiceList(node string, q *QueryOptions) (*CatalogNodeServiceList, error)
+	Service(service, tag string, q *QueryOptions) ([]*CatalogService, error)
+	Register(reg *CatalogRegistration) error
+	Deregister(dereg *CatalogDeregistration) error
+	EnsureNamespaceExists(ns string, crossNSAClPolicy string) (bool, error)
+}

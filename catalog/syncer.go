@@ -93,6 +93,8 @@ type ConsulSyncer struct {
 	// watchers is all namespaces mapped to a map of Consul service
 	// names mapped to a cancel function for watcher routines
 	watchers map[string]map[string]context.CancelFunc
+
+	DiscClient ServiceDiscoveryClient
 }
 
 // Sync implements Syncer.
@@ -181,14 +183,11 @@ func (s *ConsulSyncer) watchReapableServices(ctx context.Context) {
 	minWait := s.SyncPeriod / 4
 	minWaitCh := time.After(0)
 	for {
-		// Create a new discovery client.
-		discClient := getDiscoveryClient()
-
 		var err error
 
 		var services *CatalogNodeServiceList
 		err = backoff.Retry(func() error {
-			services, err = discClient.NodeServiceList(s.ConsulNodeName, opts)
+			services, err = s.DiscClient.NodeServiceList(s.ConsulNodeName, opts)
 			return err
 		}, backoff.WithContext(backoff.NewExponentialBackOff(), ctx))
 
@@ -272,13 +271,11 @@ func (s *ConsulSyncer) watchService(ctx context.Context, name, namespace string)
 			queryOpts.Namespace = namespace
 		}
 
-		// Create a new Discovery client.
-		discClient := getDiscoveryClient()
 		var err error
 		// Wait for service changes
 		var services []*CatalogService
 		err = backoff.Retry(func() error {
-			services, err = discClient.Service(name, s.ConsulK8STag, queryOpts)
+			services, err = s.DiscClient.Service(name, s.ConsulK8STag, queryOpts)
 			return err
 		}, backoff.WithContext(backoff.NewExponentialBackOff(), ctx))
 		if err != nil {
@@ -330,11 +327,8 @@ func (s *ConsulSyncer) scheduleReapServiceLocked(name, namespace string) error {
 		opts.Namespace = namespace
 	}
 
-	// Create a new Discovery client.
-	discClient := getDiscoveryClient()
-
 	// Only consider services that are tagged from k8s
-	services, err := discClient.Service(name, s.ConsulK8STag, &opts)
+	services, err := s.DiscClient.Service(name, s.ConsulK8STag, &opts)
 	if err != nil {
 		return err
 	}
@@ -364,9 +358,6 @@ func (s *ConsulSyncer) scheduleReapServiceLocked(name, namespace string) error {
 func (s *ConsulSyncer) syncFull(ctx context.Context) {
 	s.lock.Lock()
 	defer s.lock.Unlock()
-
-	// Create a new discovery client.
-	discClient := getDiscoveryClient()
 
 	s.Log.Info("registering services")
 
@@ -408,7 +399,7 @@ func (s *ConsulSyncer) syncFull(ctx context.Context) {
 			"node-name", r.Node,
 			"service-id", r.ServiceID,
 			"service-consul-namespace", r.Namespace)
-		err := discClient.Deregister(r)
+		err := s.DiscClient.Deregister(r)
 		if err != nil {
 			s.Log.Warn("error deregistering service",
 				"node-name", r.Node,
@@ -426,7 +417,7 @@ func (s *ConsulSyncer) syncFull(ctx context.Context) {
 	for _, services := range s.namespaces {
 		for _, r := range services {
 			if s.EnableNamespaces {
-				_, err := discClient.EnsureExists(r.Service.Namespace, s.CrossNamespaceACLPolicy)
+				_, err := s.DiscClient.EnsureNamespaceExists(r.Service.Namespace, s.CrossNamespaceACLPolicy)
 				if err != nil {
 					s.Log.Warn("error checking and creating Consul namespace",
 						"node-name", r.Node,
@@ -438,7 +429,7 @@ func (s *ConsulSyncer) syncFull(ctx context.Context) {
 			}
 
 			// Register the service.
-			err := discClient.Register(r)
+			err := s.DiscClient.Register(r)
 			if err != nil {
 				s.Log.Warn("error registering service",
 					"node-name", r.Node,
