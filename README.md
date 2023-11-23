@@ -29,5 +29,15 @@ STORE_V2_POD="$(kubectl get pods --selector app=bookstore,version=v2 -n bookstor
 kubectl port-forward $BUYER_V1_POD -n bookbuyer 8080:14001 --address 0.0.0.0 &
 kubectl port-forward $STORE_V1_POD -n bookstore 8084:14001 --address 0.0.0.0 &
 kubectl port-forward $STORE_V2_POD -n bookstore 8082:14001 --address 0.0.0.0 &
+
+https://github.com/srvaroa/eurek8s/tree/master
+
+https://srvaroa.github.io/kubernetes/eureka/paas/microservices/loadbalancing/2020/02/12/eureka-kubernetes.html
+
+https://www.zeng.dev/post/20200428-eureka-multil-cluster-replica/
+
+https://github.com/Haybu/spring-cloud-k8s-eureka-controller
+
+https://www.python100.com/html/104745.html
 ```
 

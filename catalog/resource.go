@@ -8,10 +8,6 @@ import (
 	"sync"
 
 	mapset "github.com/deckarep/golang-set"
-	"github.com/hashicorp/consul-k8s/control-plane/helper/controller"
-	"github.com/hashicorp/consul-k8s/control-plane/helper/parsetags"
-	"github.com/hashicorp/consul-k8s/control-plane/namespaces"
-	consulapi "github.com/hashicorp/consul/api"
 	"github.com/hashicorp/go-hclog"
 	corev1 "k8s.io/api/core/v1"
 	networkingv1 "k8s.io/api/networking/v1"
@@ -20,6 +16,8 @@ import (
 	"k8s.io/apimachinery/pkg/watch"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/cache"
+
+	"github.com/cybwan/go-demo/controller"
 )
 
 const (
@@ -163,7 +161,7 @@ type ServiceResource struct {
 	// consulMap holds the services in Consul that we've registered from kube.
 	// It's populated via Consul's API and lets us diff what is actually in
 	// Consul vs. what we expect to be there.
-	consulMap map[string][]*consulapi.CatalogRegistration
+	consulMap map[string][]*CatalogRegistration
 }
 
 type serviceAddress struct {
@@ -371,7 +369,7 @@ func (t *ServiceResource) generateRegistrations(key string) {
 
 	// Initialize our consul service map here if it isn't already.
 	if t.consulMap == nil {
-		t.consulMap = make(map[string][]*consulapi.CatalogRegistration)
+		t.consulMap = make(map[string][]*CatalogRegistration)
 	}
 
 	// Begin by always clearing the old value out since we'll regenerate
@@ -381,7 +379,7 @@ func (t *ServiceResource) generateRegistrations(key string) {
 	// baseNode and baseService are the base that should be modified with
 	// service-type specific changes. These are not pointers, they should be
 	// shallow copied for each instance.
-	baseNode := consulapi.CatalogRegistration{
+	baseNode := CatalogRegistration{
 		SkipNodeUpdate: true,
 		Node:           t.ConsulNodeName,
 		Address:        "127.0.0.1",
@@ -390,7 +388,7 @@ func (t *ServiceResource) generateRegistrations(key string) {
 		},
 	}
 
-	baseService := consulapi.AgentService{
+	baseService := AgentService{
 		Service: t.addPrefixAndK8SNamespace(svc.Name, svc.Namespace),
 		Tags:    []string{t.ConsulK8STag},
 		Meta: map[string]string{
@@ -405,7 +403,7 @@ func (t *ServiceResource) generateRegistrations(key string) {
 	}
 
 	// Update the Consul namespace based on namespace settings
-	consulNS := namespaces.ConsulNamespace(svc.Namespace,
+	consulNS := ConsulNamespace(svc.Namespace,
 		t.EnableNamespaces,
 		t.ConsulDestinationNamespace,
 		t.EnableK8SNSMirroring,
@@ -479,7 +477,7 @@ func (t *ServiceResource) generateRegistrations(key string) {
 
 	// Parse any additional tags
 	if rawTags, ok := svc.Annotations[annotationServiceTags]; ok {
-		baseService.Tags = append(baseService.Tags, parsetags.ParseTags(rawTags)...)
+		baseService.Tags = append(baseService.Tags, ParseTags(rawTags)...)
 	}
 
 	// Parse any additional meta
@@ -513,7 +511,7 @@ func (t *ServiceResource) generateRegistrations(key string) {
 			if weight, ok := svc.Annotations[annotationServiceWeight]; ok && weight != "" {
 				weightI, err := getServiceWeight(weight)
 				if err == nil {
-					r.Service.Weights = consulapi.AgentWeights{
+					r.Service.Weights = AgentWeights{
 						Passing: weightI,
 					}
 				} else {
@@ -562,7 +560,7 @@ func (t *ServiceResource) generateRegistrations(key string) {
 				if weight, ok := svc.Annotations[annotationServiceWeight]; ok && weight != "" {
 					weightI, err := getServiceWeight(weight)
 					if err == nil {
-						r.Service.Weights = consulapi.AgentWeights{
+						r.Service.Weights = AgentWeights{
 							Passing: weightI,
 						}
 					} else {
@@ -665,8 +663,8 @@ func (t *ServiceResource) generateRegistrations(key string) {
 }
 
 func (t *ServiceResource) registerServiceInstance(
-	baseNode consulapi.CatalogRegistration,
-	baseService consulapi.AgentService,
+	baseNode CatalogRegistration,
+	baseService AgentService,
 	key string,
 	overridePortName string,
 	overridePortNumber int,
@@ -749,12 +747,12 @@ func (t *ServiceResource) registerServiceInstance(
 				r.Service.Meta[ConsulK8SNodeName] = *subsetAddr.NodeName
 			}
 
-			r.Check = &consulapi.AgentCheck{
+			r.Check = &AgentCheck{
 				CheckID:   consulHealthCheckID(endpoints.Namespace, serviceID(r.Service.Service, addr)),
 				Name:      consulKubernetesCheckName,
 				Namespace: baseService.Namespace,
 				Type:      consulKubernetesCheckType,
-				Status:    consulapi.HealthPassing,
+				Status:    HealthPassing,
 				ServiceID: serviceID(r.Service.Service, addr),
 				Output:    kubernetesSuccessReasonMsg,
 			}
@@ -772,7 +770,7 @@ func (t *ServiceResource) sync() {
 	// the times that sync are called are also not the most efficient. All
 	// of these are implementation details so lets improve this later when
 	// it becomes a performance issue and just do the easy thing first.
-	rs := make([]*consulapi.CatalogRegistration, 0, len(t.consulMap)*4)
+	rs := make([]*CatalogRegistration, 0, len(t.consulMap)*4)
 	for _, set := range t.consulMap {
 		rs = append(rs, set...)
 	}

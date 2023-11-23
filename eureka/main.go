@@ -11,7 +11,6 @@ import (
 func main() {
 	httpAddr := "http://127.0.0.1:8761/eureka"
 	eurekaClient := fargo.NewConn(httpAddr)
-
 	apps, err := eurekaClient.GetApps()
 	if err != nil {
 		fmt.Println(err.Error())

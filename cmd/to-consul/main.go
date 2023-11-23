@@ -168,6 +168,7 @@ func initA() {
 	// Set up logging
 	if logger == nil {
 		parsedLevel := hclog.LevelFromString(flagLogLevel)
+		parsedLevel = hclog.Warn
 
 		logger = hclog.New(&hclog.LoggerOptions{
 			JSONFormat: flagLogJSON,
@@ -242,7 +243,7 @@ func main() {
 		Log:      logger.Named("to-consul/controller"),
 		Resource: &serviceResource,
 	}
-	ctl.Log.SetLevel(hclog.Debug)
+	ctl.Log.SetLevel(hclog.Warn)
 
 	// Start the K8S-to-Consul syncer
 	var toConsulCh chan struct{}
