@@ -19,6 +19,6 @@ func main() {
 
 	fmt.Println(len(apps))
 
-	bytes, _ := json.Marshal(apps)
+	bytes, _ := json.MarshalIndent(apps, "", " ")
 	fmt.Println(string(bytes))
 }

@@ -201,7 +201,7 @@ func (s *ConsulSyncer) watchReapableServices(ctx context.Context) {
 		// Wait our minimum time before continuing or retrying
 		select {
 		case <-minWaitCh:
-			if err != nil {
+			if err != nil || services == nil || len(services.Services) == 0 {
 				continue
 			}
 
@@ -301,6 +301,7 @@ func (s *ConsulSyncer) watchService(ctx context.Context, name, namespace string)
 			s.deregs[svc.ServiceID] = &CatalogDeregistration{
 				Node:      svc.Node,
 				ServiceID: svc.ServiceID,
+				Service:   svc.ServiceName,
 			}
 			if s.EnableNamespaces {
 				s.deregs[svc.ServiceID].Namespace = namespace
@@ -338,6 +339,7 @@ func (s *ConsulSyncer) scheduleReapServiceLocked(name, namespace string) error {
 		s.deregs[svc.ServiceID] = &CatalogDeregistration{
 			Node:      svc.Node,
 			ServiceID: svc.ServiceID,
+			Service:   svc.ServiceName,
 		}
 		if s.EnableNamespaces {
 			s.deregs[svc.ServiceID].Namespace = namespace

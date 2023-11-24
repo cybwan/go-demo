@@ -207,7 +207,7 @@ func main() {
 		ServicePollPeriod:       flagConsulWritePeriod * 2,
 		ConsulK8STag:            flagConsulK8STag,
 		ConsulNodeName:          flagConsulNodeName,
-		DiscClient:              catalog.GetDiscoveryClient(),
+		DiscClient:              catalog.GetEurekalDiscoveryClient(),
 	}
 	go syncer.Run(ctx)
 

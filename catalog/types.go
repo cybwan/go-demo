@@ -1,9 +1,12 @@
 package catalog
 
 import (
+	"fmt"
+	"strings"
 	"time"
 
 	"github.com/hashicorp/consul/api"
+	"github.com/hudl/fargo"
 )
 
 // AgentCheck represents a check known to the agent
@@ -99,6 +102,7 @@ func (as *AgentService) fromConsul(agentService *api.AgentService) {
 type CatalogDeregistration struct {
 	Node      string
 	ServiceID string
+	Service   string
 	Namespace string
 }
 
@@ -107,6 +111,13 @@ func (cdr *CatalogDeregistration) toConsul() *api.CatalogDeregistration {
 	r.Node = cdr.Node
 	r.ServiceID = cdr.ServiceID
 	r.Namespace = cdr.Namespace
+	return r
+}
+
+func (cdr *CatalogDeregistration) toEureka() *fargo.Instance {
+	r := new(fargo.Instance)
+	r.InstanceId = cdr.ServiceID
+	r.App = cdr.Service
 	return r
 }
 
@@ -139,6 +150,34 @@ func (cr *CatalogRegistration) toConsul() *api.CatalogRegistration {
 	return r
 }
 
+func (cr *CatalogRegistration) toEureka() *fargo.Instance {
+	r := new(fargo.Instance)
+	if len(cr.NodeMeta) > 0 {
+		for k, v := range cr.NodeMeta {
+			r.SetMetadataString(k, v)
+		}
+	}
+	if cr.Service != nil {
+		r.UniqueID = func(i fargo.Instance) string {
+			return cr.Service.ID
+		}
+		r.InstanceId = cr.Service.ID
+		r.HostName = cr.Service.Address
+		r.IPAddr = cr.Service.Address
+		r.App = cr.Service.Service
+		r.VipAddress = strings.ToLower(cr.Service.Service)
+		r.SecureVipAddress = strings.ToLower(cr.Service.Service)
+		r.Port = cr.Service.Port
+		r.Status = fargo.UP
+		r.DataCenterInfo = fargo.DataCenterInfo{Name: fargo.MyOwn}
+
+		r.HomePageUrl = fmt.Sprintf("http://%s:%d/", cr.Service.Address, cr.Service.Port)
+		r.StatusPageUrl = fmt.Sprintf("http://%s:%d/actuator/info", cr.Service.Address, cr.Service.Port)
+		r.HealthCheckUrl = fmt.Sprintf("http://%s:%d/actuator/health", cr.Service.Address, cr.Service.Port)
+	}
+	return r
+}
+
 type CatalogService struct {
 	Node        string
 	ServiceID   string
@@ -152,6 +191,15 @@ func (cs *CatalogService) fromConsul(svc *api.CatalogService) {
 	cs.Node = svc.Node
 	cs.ServiceID = svc.ServiceID
 	cs.ServiceName = svc.ServiceName
+}
+
+func (cs *CatalogService) fromEureka(svc *fargo.Instance) {
+	if svc == nil {
+		return
+	}
+	cs.Node = svc.DataCenterInfo.Name
+	cs.ServiceID = svc.Id()
+	cs.ServiceName = svc.App
 }
 
 type CatalogNodeServiceList struct {
@@ -212,4 +260,80 @@ type ServiceDiscoveryClient interface {
 	Register(reg *CatalogRegistration) error
 	Deregister(dereg *CatalogDeregistration) error
 	EnsureNamespaceExists(ns string, crossNSAClPolicy string) (bool, error)
+}
+
+const (
+	// HealthAny is special, and is used as a wild card,
+	// not as a specific state.
+	HealthAny      = "any"
+	HealthPassing  = "passing"
+	HealthWarning  = "warning"
+	HealthCritical = "critical"
+	HealthMaint    = "maintenance"
+)
+
+// ConsulNamespace returns the consul namespace that a service should be
+// registered in based on the namespace options. It returns an
+// empty string if namespaces aren't enabled.
+func ConsulNamespace(kubeNS string, enableConsulNamespaces bool, consulDestNS string, enableMirroring bool, mirroringPrefix string) string {
+	if !enableConsulNamespaces {
+		return ""
+	}
+
+	// Mirroring takes precedence.
+	if enableMirroring {
+		return fmt.Sprintf("%s%s", mirroringPrefix, kubeNS)
+	}
+
+	return consulDestNS
+}
+
+// ParseTags parses the tags annotation into a slice of tags.
+// Tags are split on commas (except for escaped commas "\,").
+func ParseTags(tagsAnno string) []string {
+
+	// This algorithm parses the tagsAnno string into a slice of strings.
+	// Ideally we'd just split on commas but since Consul tags support commas,
+	// we allow users to escape commas so they're included in the tag, e.g.
+	// the annotation "tag\,with\,commas,tag2" will become the tags:
+	// ["tag,with,commas", "tag2"].
+
+	var tags []string
+	// nextTag is built up char by char until we see a comma. Then we
+	// append it to tags.
+	var nextTag string
+
+	for _, runeChar := range tagsAnno {
+		runeStr := fmt.Sprintf("%c", runeChar)
+
+		// Not a comma, just append to nextTag.
+		if runeStr != "," {
+			nextTag += runeStr
+			continue
+		}
+
+		// Reached a comma but there's nothing in nextTag,
+		// skip. (e.g. "a,,b" => ["a", "b"])
+		if len(nextTag) == 0 {
+			continue
+		}
+
+		// Check if the comma was escaped comma, e.g. "a\,b".
+		if string(nextTag[len(nextTag)-1]) == `\` {
+			// Replace the backslash with a comma.
+			nextTag = nextTag[0:len(nextTag)-1] + ","
+			continue
+		}
+
+		// Non-escaped comma. We're ready to push nextTag onto tags and reset nextTag.
+		tags = append(tags, strings.TrimSpace(nextTag))
+		nextTag = ""
+	}
+
+	// We're done the loop but nextTag still contains the last tag.
+	if len(nextTag) > 0 {
+		tags = append(tags, strings.TrimSpace(nextTag))
+	}
+
+	return tags
 }
