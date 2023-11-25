@@ -9,9 +9,10 @@ import (
 	"sync"
 	"time"
 
+	"github.com/rs/zerolog"
+
 	"github.com/cenkalti/backoff"
 	mapset "github.com/deckarep/golang-set"
-	"github.com/hashicorp/go-hclog"
 )
 
 const (
@@ -38,7 +39,7 @@ type Syncer interface {
 // services and ensures the local set of registrations represents the
 // source of truth, overwriting any external changes to the services.
 type ConsulSyncer struct {
-	Log hclog.Logger
+	Log zerolog.Logger
 
 	// EnableNamespaces indicates that a user is running Consul Enterprise
 	// with version 1.7+ which is namespace aware. It enables Consul namespaces,
@@ -117,14 +118,14 @@ func (s *ConsulSyncer) Sync(rs []*CatalogRegistration) {
 			s.serviceNames[ns] = mapset.NewSet()
 		}
 		s.serviceNames[ns].Add(r.Service.Service)
-		s.Log.Debug("[Sync] adding service to serviceNames set", "service", r.Service, "service name", r.Service.Service)
+		s.Log.Debug().Msgf("[Sync] adding service to serviceNames set service:%v service name:%s", r.Service, r.Service.Service)
 
 		// Add service to namespaces map, initializing if necessary
 		if _, ok := s.namespaces[ns]; !ok {
 			s.namespaces[ns] = make(map[string]*CatalogRegistration)
 		}
 		s.namespaces[ns][r.Service.ID] = r
-		s.Log.Debug("[Sync] adding service to namespaces map", "service", r.Service)
+		s.Log.Debug().Msgf("[Sync] adding service to namespaces map service:%v", r.Service)
 	}
 
 	// Signal that the initial sync is complete and our maps have been populated.
@@ -146,7 +147,7 @@ func (s *ConsulSyncer) Run(ctx context.Context) {
 	for {
 		select {
 		case <-ctx.Done():
-			s.Log.Info("ConsulSyncer quitting")
+			s.Log.Info().Msg("ConsulSyncer quitting")
 			return
 
 		case <-reconcileTimer.C:
@@ -192,10 +193,10 @@ func (s *ConsulSyncer) watchReapableServices(ctx context.Context) {
 		}, backoff.WithContext(backoff.NewExponentialBackOff(), ctx))
 
 		if err != nil {
-			s.Log.Warn("error querying services, will retry", "err", err)
+			s.Log.Warn().Msgf("error querying services, will retry err:%v", err)
 		} else {
-			s.Log.Debug("[watchReapableServices] services returned from catalog",
-				"services", services)
+			s.Log.Debug().Msgf("[watchReapableServices] services returned from catalog services:%v",
+				services)
 		}
 
 		// Wait our minimum time before continuing or retrying
@@ -225,20 +226,20 @@ func (s *ConsulSyncer) watchReapableServices(ctx context.Context) {
 			if _, ok := s.serviceNames[svcNs]; ok {
 				// We only care if we don't know about this service at all.
 				if s.serviceNames[svcNs].Contains(service.Service) {
-					s.Log.Debug("[watchReapableServices] serviceNames contains service",
-						"namespace", svcNs,
-						"service-name", service.Service)
+					s.Log.Debug().Msgf("[watchReapableServices] serviceNames contains service namespace:%s service-name:%s",
+						svcNs,
+						service.Service)
 					continue
 				}
 			}
 
-			s.Log.Info("invalid service found, scheduling for delete",
-				"service-name", service.Service, "service-id", service.ID, "service-consul-namespace", svcNs)
+			s.Log.Info().Msgf("invalid service found, scheduling for delete service-name:%s service-id:%s service-consul-namespace:%s",
+				service.Service, service.ID, svcNs)
 			if err = s.scheduleReapServiceLocked(service.Service, svcNs); err != nil {
-				s.Log.Info("error querying service for delete",
-					"service-name", service.Service,
-					"service-consul-namespace", svcNs,
-					"err", err)
+				s.Log.Info().Msgf("error querying service for delete service-name:%s service-consul-namespace:%s err:%v",
+					service.Service,
+					svcNs,
+					err)
 			}
 		}
 
@@ -249,8 +250,8 @@ func (s *ConsulSyncer) watchReapableServices(ctx context.Context) {
 // watchService watches all instances of a service by name for changes
 // and schedules re-registration or deletion if necessary.
 func (s *ConsulSyncer) watchService(ctx context.Context, name, namespace string) {
-	s.Log.Info("starting service watcher", "service-name", name, "service-consul-namespace", namespace)
-	defer s.Log.Info("stopping service watcher", "service-name", name, "service-consul-namespace", namespace)
+	s.Log.Info().Msgf("starting service watcher service-name:%s service-consul-namespace:%s", name, namespace)
+	defer s.Log.Info().Msgf("stopping service watcher service-name:%s service-consul-namespace:%s", name, namespace)
 
 	for {
 		select {
@@ -279,10 +280,10 @@ func (s *ConsulSyncer) watchService(ctx context.Context, name, namespace string)
 			return err
 		}, backoff.WithContext(backoff.NewExponentialBackOff(), ctx))
 		if err != nil {
-			s.Log.Warn("error querying service, will retry",
-				"service-name", name,
-				"service-namespace", namespace, // will be "" if namespaces aren't enabled
-				"err", err)
+			s.Log.Warn().Msgf("error querying service, will retry service-name:%s service-namespace:%s err:%v",
+				name,
+				namespace, // will be "" if namespaces aren't enabled
+				err)
 			continue
 		}
 
@@ -306,11 +307,11 @@ func (s *ConsulSyncer) watchService(ctx context.Context, name, namespace string)
 			if s.EnableNamespaces {
 				s.deregs[svc.ServiceID].Namespace = namespace
 			}
-			s.Log.Debug("[watchService] service being scheduled for deregistration",
-				"namespace", namespace,
-				"service name", svc.ServiceName,
-				"service id", svc.ServiceID,
-				"service dereg", s.deregs[svc.ServiceID])
+			s.Log.Debug().Msgf("[watchService] service being scheduled for deregistration namespace:%s service name:%s service id:%s service dereg:%v",
+				namespace,
+				svc.ServiceName,
+				svc.ServiceID,
+				s.deregs[svc.ServiceID])
 		}
 
 		s.lock.Unlock()
@@ -344,11 +345,11 @@ func (s *ConsulSyncer) scheduleReapServiceLocked(name, namespace string) error {
 		if s.EnableNamespaces {
 			s.deregs[svc.ServiceID].Namespace = namespace
 		}
-		s.Log.Debug("[scheduleReapServiceLocked] service being scheduled for deregistration",
-			"namespace", namespace,
-			"service name", svc.ServiceName,
-			"service id", svc.ServiceID,
-			"service dereg", s.deregs[svc.ServiceID])
+		s.Log.Debug().Msgf("[scheduleReapServiceLocked] service being scheduled for deregistration namespace:%s service name:%s service id:%s service dereg:%v",
+			namespace,
+			svc.ServiceName,
+			svc.ServiceID,
+			s.deregs[svc.ServiceID])
 	}
 
 	return nil
@@ -361,7 +362,7 @@ func (s *ConsulSyncer) syncFull(ctx context.Context) {
 	s.lock.Lock()
 	defer s.lock.Unlock()
 
-	s.Log.Info("registering services")
+	s.Log.Info().Msg("registering services")
 
 	// Update the service watchers
 	for ns, watchers := range s.watchers {
@@ -371,7 +372,7 @@ func (s *ConsulSyncer) syncFull(ctx context.Context) {
 			if s.serviceNames[ns] == nil || !s.serviceNames[ns].Contains(svc) {
 				cf()
 				delete(s.watchers[ns], svc)
-				s.Log.Debug("[syncFull] deleting service watcher", "namespace", ns, "service", svc)
+				s.Log.Debug().Msgf("[syncFull] deleting service watcher namespace:%s service:%s", ns, svc)
 			}
 		}
 	}
@@ -382,7 +383,7 @@ func (s *ConsulSyncer) syncFull(ctx context.Context) {
 			if _, ok := s.watchers[ns][svc.(string)]; !ok {
 				svcCtx, cancelF := context.WithCancel(ctx)
 				go s.watchService(svcCtx, svc.(string), ns)
-				s.Log.Debug("[syncFull] starting watchService routine", "namespace", ns, "service", svc)
+				s.Log.Debug().Msgf("[syncFull] starting watchService routine namespace:%s service:%s", ns, svc)
 
 				// Create watcher map if it doesn't exist for this namespace
 				if s.watchers[ns] == nil {
@@ -397,17 +398,17 @@ func (s *ConsulSyncer) syncFull(ctx context.Context) {
 
 	// Do all deregistrations first.
 	for _, r := range s.deregs {
-		s.Log.Info("deregistering service",
-			"node-name", r.Node,
-			"service-id", r.ServiceID,
-			"service-consul-namespace", r.Namespace)
+		s.Log.Info().Msgf("deregistering service node-name:%s service-id:%s service-consul-namespace:%s",
+			r.Node,
+			r.ServiceID,
+			r.Namespace)
 		err := s.DiscClient.Deregister(r)
 		if err != nil {
-			s.Log.Warn("error deregistering service",
-				"node-name", r.Node,
-				"service-id", r.ServiceID,
-				"service-consul-namespace", r.Namespace,
-				"err", err)
+			s.Log.Warn().Msgf("error deregistering service node-name:%s service-id:%s service-consul-namespace:%s err:%v",
+				r.Node,
+				r.ServiceID,
+				r.Namespace,
+				err)
 		}
 	}
 
@@ -421,11 +422,11 @@ func (s *ConsulSyncer) syncFull(ctx context.Context) {
 			if s.EnableNamespaces {
 				_, err := s.DiscClient.EnsureNamespaceExists(r.Service.Namespace, s.CrossNamespaceACLPolicy)
 				if err != nil {
-					s.Log.Warn("error checking and creating Consul namespace",
-						"node-name", r.Node,
-						"service-name", r.Service.Service,
-						"consul-namespace-name", r.Service.Namespace,
-						"err", err)
+					s.Log.Warn().Msgf("error checking and creating Consul namespace node-name:%s service-name:%s consul-namespace-name:%s err:%v",
+						r.Node,
+						r.Service.Service,
+						r.Service.Namespace,
+						err)
 					continue
 				}
 			}
@@ -433,19 +434,19 @@ func (s *ConsulSyncer) syncFull(ctx context.Context) {
 			// Register the service.
 			err := s.DiscClient.Register(r)
 			if err != nil {
-				s.Log.Warn("error registering service",
-					"node-name", r.Node,
-					"service-name", r.Service.Service,
-					"service", r.Service,
-					"err", err)
+				s.Log.Warn().Msgf("error registering service node-name:%s service-name:%s service:%v err:%v",
+					r.Node,
+					r.Service.Service,
+					r.Service,
+					err)
 				continue
 			}
 
-			s.Log.Debug("registered service instance",
-				"node-name", r.Node,
-				"service-name", r.Service.Service,
-				"consul-namespace-name", r.Service.Namespace,
-				"service", r.Service)
+			s.Log.Debug().Msgf("registered service instance node-name:%s service-name:%s consul-namespace-name:%s service:%v",
+				r.Node,
+				r.Service.Service,
+				r.Service.Namespace,
+				r.Service)
 		}
 	}
 }

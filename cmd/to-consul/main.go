@@ -12,7 +12,8 @@ import (
 	"time"
 
 	mapset "github.com/deckarep/golang-set"
-	hclog "github.com/hashicorp/go-hclog"
+	"github.com/flomesh-io/fsm/pkg/logger"
+	"github.com/rs/zerolog"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/cybwan/go-demo/catalog"
@@ -80,7 +81,7 @@ var (
 	flagEnableIngress   bool // Register services using the hostname from an ingress resource
 	flagLoadBalancerIPs bool // Use the load balancer IP of an ingress resource instead of the hostname
 
-	logger hclog.Logger
+	log zerolog.Logger
 
 	sigCh chan os.Signal
 
@@ -166,15 +167,8 @@ func initA() {
 		"[Enterprise Only] Enables namespaces, in either a single Consul namespace or mirrored.")
 
 	// Set up logging
-	if logger == nil {
-		parsedLevel := hclog.LevelFromString(flagLogLevel)
-		parsedLevel = hclog.Warn
-
-		logger = hclog.New(&hclog.LoggerOptions{
-			JSONFormat: flagLogJSON,
-			Level:      parsedLevel,
-			Output:     os.Stderr,
-		}).Named("")
+	if err := logger.SetLogLevel(flagLogLevel); err != nil {
+		log.Fatal().Err(err).Msg("Error setting log level")
 	}
 
 	sigCh = make(chan os.Signal, 1)
@@ -200,7 +194,7 @@ func main() {
 	ctx, cancelF := context.WithCancel(context.Background())
 
 	syncer := &catalog.ConsulSyncer{
-		Log:                     logger.Named("to-consul/sink"),
+		Log:                     logger.New("to-cloud/sink"),
 		EnableNamespaces:        flagEnableNamespaces,
 		CrossNamespaceACLPolicy: flagCrossNamespaceACLPolicy,
 		SyncPeriod:              flagConsulWritePeriod,
@@ -217,7 +211,7 @@ func main() {
 	flagK8SDefault = true
 
 	serviceResource := catalog.ServiceResource{
-		Log:                        logger.Named("to-consul/source"),
+		Log:                        logger.New("to-consul/source"),
 		Client:                     clientset,
 		Syncer:                     syncer,
 		Ctx:                        ctx,
@@ -241,10 +235,9 @@ func main() {
 
 	// Build the controller and start it
 	ctl := &controller.Controller{
-		Log:      logger.Named("to-consul/controller"),
+		Log:      logger.New("to-consul/controller"),
 		Resource: &serviceResource,
 	}
-	ctl.Log.SetLevel(hclog.Warn)
 
 	// Start the K8S-to-Consul syncer
 	var toConsulCh chan struct{}
@@ -274,7 +267,7 @@ func main() {
 
 	// Interrupted/terminated, gracefully exit
 	case sig := <-sigCh:
-		logger.Info(fmt.Sprintf("%s received, shutting down", sig))
+		fmt.Printf("%s received, shutting down\n", sig)
 		cancelF()
 		if toConsulCh != nil {
 			<-toConsulCh

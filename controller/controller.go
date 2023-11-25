@@ -11,7 +11,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/hashicorp/go-hclog"
+	"github.com/rs/zerolog"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/client-go/tools/cache"
@@ -22,7 +22,7 @@ import (
 // Kubernetes for changes to specific set of resources and calls the configured
 // callbacks as data changes.
 type Controller struct {
-	Log      hclog.Logger
+	Log      zerolog.Logger
 	Resource Resource
 
 	informer cache.SharedIndexInformer
@@ -67,14 +67,14 @@ func (c *Controller) Run(stopCh <-chan struct{}) {
 			// convert the resource object into a key (in this case
 			// we are just doing it in the format of 'namespace/name')
 			key, err := cache.MetaNamespaceKeyFunc(obj)
-			c.Log.Debug("queue", "op", "add", "key", key)
+			c.Log.Debug().Msgf("queue op %s %s:%s", "add", "key", key)
 			if err == nil {
 				queue.Add(Event{Key: key, Obj: obj})
 			}
 		},
 		UpdateFunc: func(oldObj, newObj interface{}) {
 			key, err := cache.MetaNamespaceKeyFunc(newObj)
-			c.Log.Debug("queue", "op", "update", "key", key)
+			c.Log.Debug().Msgf("queue op %s %s:%s", "update", "key", key)
 			if err == nil {
 				queue.Add(Event{Key: key, Obj: newObj})
 			}
@@ -82,7 +82,7 @@ func (c *Controller) Run(stopCh <-chan struct{}) {
 		DeleteFunc: c.informerDeleteHandler(queue),
 	})
 	if err != nil {
-		c.Log.Error("error adding informer event handlers", err)
+		c.Log.Error().Msgf("error adding informer event handlers:%v", err)
 	}
 
 	// If the type is a background syncer, then we startup the background
@@ -130,7 +130,7 @@ func (c *Controller) Run(stopCh <-chan struct{}) {
 		utilruntime.HandleError(fmt.Errorf("error syncing cache"))
 		return
 	}
-	c.Log.Debug("initial cache sync complete")
+	c.Log.Debug().Msg("initial cache sync complete")
 
 	// run the runWorker method every second with a stop channel
 	wait.Until(func() {
@@ -171,7 +171,7 @@ func (c *Controller) processSingle(
 
 	event, ok := rawEvent.(Event)
 	if !ok {
-		c.Log.Warn("processSingle: dropping event with unexpected type", "event", rawEvent)
+		c.Log.Warn().Msgf("processSingle: dropping event with unexpected type event:%v", rawEvent)
 		return true
 	}
 
@@ -182,8 +182,8 @@ func (c *Controller) processSingle(
 
 	// If we got the item successfully, call the proper method
 	if err == nil {
-		c.Log.Debug("processing object", "key", key, "exists", exists)
-		c.Log.Trace("processing object", "object", item)
+		c.Log.Debug().Msgf("processing object key:%s exists:%v", key, exists)
+		c.Log.Trace().Msgf("processing object:%v", item)
 		if !exists {
 			// In the case of deletes, the item is no longer in the cache so
 			// we use the copy we got at the time of the event (event.Obj).
@@ -199,10 +199,10 @@ func (c *Controller) processSingle(
 
 	if err != nil {
 		if queue.NumRequeues(event) < 5 {
-			c.Log.Error("failed processing item, retrying", "key", key, "error", err)
+			c.Log.Error().Msgf("failed processing item, retrying key:%s error:%v", key, err)
 			queue.AddRateLimited(rawEvent)
 		} else {
-			c.Log.Error("failed processing item, no more retries", "key", key, "error", err)
+			c.Log.Error().Msgf("failed processing item, no more retries key:%s error:%v", key, err)
 			queue.Forget(rawEvent)
 			utilruntime.HandleError(err)
 		}
@@ -217,7 +217,7 @@ func (c *Controller) processSingle(
 func (c *Controller) informerDeleteHandler(queue workqueue.RateLimitingInterface) func(obj interface{}) {
 	return func(obj interface{}) {
 		key, err := cache.DeletionHandlingMetaNamespaceKeyFunc(obj)
-		c.Log.Debug("queue", "op", "delete", "key", key)
+		c.Log.Debug().Msgf("queue op %s %s:%s", "delete", "key", key)
 		if err == nil {
 			// obj might be of type `cache.DeletedFinalStateUnknown`
 			// in which case we need to extract the object from
