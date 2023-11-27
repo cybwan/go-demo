@@ -1,7 +1,8 @@
 package catalog
 
 import (
-	"github.com/hashicorp/consul/api"
+	"fmt"
+
 	"github.com/hudl/fargo"
 )
 
@@ -13,16 +14,34 @@ type EurekaDiscoveryClient struct {
 	eurekaClient fargo.EurekaConnection
 }
 
+func (dc *EurekaDiscoveryClient) CatalogServices(q *QueryOptions) (map[string][]string, error) {
+	servicesMap, err := dc.eurekaClient.GetApps()
+	if err != nil {
+		return nil, err
+	}
+
+	catalogServices := make(map[string][]string)
+	if len(servicesMap) > 0 {
+		for svc, svcApp := range servicesMap {
+			for _, svcIns := range svcApp.Instances {
+				svcTagArray, exists := catalogServices[svc]
+				if !exists {
+					svcTagArray = make([]string, 0)
+				}
+				metadata := svcIns.Metadata.GetMap()
+				for k, v := range metadata {
+					svcTagArray = append(svcTagArray, fmt.Sprintf("%s=%v", k, v))
+				}
+				catalogServices[svc] = svcTagArray
+			}
+		}
+	}
+	return catalogServices, nil
+}
+
 // CatalogService is used to query catalog entries for a given service
 func (dc *EurekaDiscoveryClient) CatalogService(service, tag string, q *QueryOptions) ([]*CatalogService, error) {
-	// Set up query options
-	opts := api.QueryOptions{}
-	opts.AllowStale = q.AllowStale
-	opts.Namespace = q.Namespace
-
-	// Only consider services that are tagged from k8s
 	services, err := dc.eurekaClient.GetApp(service)
-	//services, _, err := dc.eurekaClient.Catalog().CatalogService(service, tag, &opts)
 	if err != nil {
 		return nil, err
 	}
@@ -32,6 +51,21 @@ func (dc *EurekaDiscoveryClient) CatalogService(service, tag string, q *QueryOpt
 		catalogServices[idx].fromEureka(ins)
 	}
 	return catalogServices, nil
+}
+
+// HealthService is used to query catalog entries for a given service
+func (dc *EurekaDiscoveryClient) HealthService(service, tag string, q *QueryOptions, passingOnly bool) ([]*AgentService, error) {
+	services, err := dc.eurekaClient.GetApp(service)
+	if err != nil {
+		return nil, err
+	}
+
+	agentServices := make([]*AgentService, len(services.Instances))
+	for idx, ins := range services.Instances {
+		agentServices[idx] = new(AgentService)
+		agentServices[idx].fromEureka(ins)
+	}
+	return agentServices, nil
 }
 
 func (dc *EurekaDiscoveryClient) NodeServiceList(node string, q *QueryOptions) (*CatalogNodeServiceList, error) {
@@ -55,7 +89,7 @@ func (dc *EurekaDiscoveryClient) EnsureNamespaceExists(ns string, crossNSAClPoli
 	return false, nil
 }
 
-func GetEurekalDiscoveryClient() *EurekaDiscoveryClient {
+func GetEurekaDiscoveryClient() *EurekaDiscoveryClient {
 	if eurekaDiscoveryClient == nil {
 		eurekaDiscoveryClient = new(EurekaDiscoveryClient)
 		httpAddr := "http://127.0.0.1:8761/eureka"
