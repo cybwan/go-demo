@@ -6,15 +6,15 @@ import (
 )
 
 var (
-	eurekaDiscoveryClient *EurekalDiscoveryClient
+	eurekaDiscoveryClient *EurekaDiscoveryClient
 )
 
-type EurekalDiscoveryClient struct {
+type EurekaDiscoveryClient struct {
 	eurekaClient fargo.EurekaConnection
 }
 
-// Service is used to query catalog entries for a given service
-func (dc *EurekalDiscoveryClient) Service(service, tag string, q *QueryOptions) ([]*CatalogService, error) {
+// CatalogService is used to query catalog entries for a given service
+func (dc *EurekaDiscoveryClient) CatalogService(service, tag string, q *QueryOptions) ([]*CatalogService, error) {
 	// Set up query options
 	opts := api.QueryOptions{}
 	opts.AllowStale = q.AllowStale
@@ -22,7 +22,7 @@ func (dc *EurekalDiscoveryClient) Service(service, tag string, q *QueryOptions) 
 
 	// Only consider services that are tagged from k8s
 	services, err := dc.eurekaClient.GetApp(service)
-	//services, _, err := dc.eurekaClient.Catalog().Service(service, tag, &opts)
+	//services, _, err := dc.eurekaClient.Catalog().CatalogService(service, tag, &opts)
 	if err != nil {
 		return nil, err
 	}
@@ -34,16 +34,16 @@ func (dc *EurekalDiscoveryClient) Service(service, tag string, q *QueryOptions) 
 	return catalogServices, nil
 }
 
-func (dc *EurekalDiscoveryClient) NodeServiceList(node string, q *QueryOptions) (*CatalogNodeServiceList, error) {
+func (dc *EurekaDiscoveryClient) NodeServiceList(node string, q *QueryOptions) (*CatalogNodeServiceList, error) {
 	return nil, nil
 }
 
-func (dc *EurekalDiscoveryClient) Deregister(dereg *CatalogDeregistration) error {
+func (dc *EurekaDiscoveryClient) Deregister(dereg *CatalogDeregistration) error {
 	err := dc.eurekaClient.DeregisterInstance(dereg.toEureka())
 	return err
 }
 
-func (dc *EurekalDiscoveryClient) Register(reg *CatalogRegistration) error {
+func (dc *EurekaDiscoveryClient) Register(reg *CatalogRegistration) error {
 	err := dc.eurekaClient.RegisterInstance(reg.toEureka())
 	return err
 }
@@ -51,13 +51,13 @@ func (dc *EurekalDiscoveryClient) Register(reg *CatalogRegistration) error {
 // EnsureNamespaceExists ensures a Consul namespace with name ns exists. If it doesn't,
 // it will create it and set crossNSACLPolicy as a policy default.
 // Boolean return value indicates if the namespace was created by this call.
-func (dc *EurekalDiscoveryClient) EnsureNamespaceExists(ns string, crossNSAClPolicy string) (bool, error) {
+func (dc *EurekaDiscoveryClient) EnsureNamespaceExists(ns string, crossNSAClPolicy string) (bool, error) {
 	return false, nil
 }
 
-func GetEurekalDiscoveryClient() *EurekalDiscoveryClient {
+func GetEurekalDiscoveryClient() *EurekaDiscoveryClient {
 	if eurekaDiscoveryClient == nil {
-		eurekaDiscoveryClient = new(EurekalDiscoveryClient)
+		eurekaDiscoveryClient = new(EurekaDiscoveryClient)
 		httpAddr := "http://127.0.0.1:8761/eureka"
 		eurekaDiscoveryClient.eurekaClient = fargo.NewConn(httpAddr)
 	}

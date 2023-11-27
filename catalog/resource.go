@@ -22,22 +22,22 @@ import (
 )
 
 const (
-	// ConsulSourceKey is the key used in the meta to track the "k8s" source.
-	// ConsulSourceValue is the value of the source.
-	ConsulSourceKey   = "external-source"
-	ConsulSourceValue = "kubernetes"
+	// CloudSourceKey is the key used in the meta to track the "k8s" source.
+	// CloudSourceValue is the value of the source.
+	CloudSourceKey   = "external-source"
+	CloudSourceValue = "kubernetes"
 
-	// ConsulK8SNS is the key used in the meta to record the namespace
+	// CloudK8SNS is the key used in the meta to record the namespace
 	// of the service/node registration.
-	ConsulK8SNS       = "external-k8s-ns"
-	ConsulK8SRefKind  = "external-k8s-ref-kind"
-	ConsulK8SRefValue = "external-k8s-ref-name"
-	ConsulK8SNodeName = "external-k8s-node-name"
+	CloudK8SNS       = "external-k8s-ns"
+	CloudK8SRefKind  = "external-k8s-ref-kind"
+	CloudK8SRefValue = "external-k8s-ref-name"
+	CloudK8SNodeName = "external-k8s-node-name"
 
-	// consulKubernetesCheckType is the type of health check in Consul for Kubernetes readiness status.
-	consulKubernetesCheckType = "kubernetes-readiness"
-	// consulKubernetesCheckName is the name of health check in Consul for Kubernetes readiness status.
-	consulKubernetesCheckName  = "Kubernetes Readiness Check"
+	// cloudKubernetesCheckType is the type of health check in Consul for Kubernetes readiness status.
+	cloudKubernetesCheckType = "kubernetes-readiness"
+	// cloudKubernetesCheckName is the name of health check in Consul for Kubernetes readiness status.
+	cloudKubernetesCheckName   = "Kubernetes Readiness Check"
 	kubernetesSuccessReasonMsg = "Kubernetes health checks passing"
 )
 
@@ -56,7 +56,7 @@ const (
 	InternalOnly NodePortSyncType = "InternalOnly"
 )
 
-// ServiceResource implements controller.Resource to sync Service resource
+// ServiceResource implements controller.Resource to sync CatalogService resource
 // types from K8S.
 type ServiceResource struct {
 	Log    zerolog.Logger
@@ -192,7 +192,7 @@ func (t *ServiceResource) Informer() cache.SharedIndexInformer {
 
 // Upsert implements the controller.Resource interface.
 func (t *ServiceResource) Upsert(key string, raw interface{}) error {
-	// We expect a Service. If it isn't a service then just ignore it.
+	// We expect a CatalogService. If it isn't a service then just ignore it.
 	service, ok := raw.(*corev1.Service)
 	if !ok {
 		t.Log.Warn().Msgf("upsert got invalid type raw:%v", raw)
@@ -385,7 +385,7 @@ func (t *ServiceResource) generateRegistrations(key string) {
 		Node:           t.ConsulNodeName,
 		Address:        "127.0.0.1",
 		NodeMeta: map[string]string{
-			ConsulSourceKey: ConsulSourceValue,
+			CloudSourceKey: CloudSourceValue,
 		},
 	}
 
@@ -393,8 +393,8 @@ func (t *ServiceResource) generateRegistrations(key string) {
 		Service: t.addPrefixAndK8SNamespace(svc.Name, svc.Namespace),
 		Tags:    []string{t.ConsulK8STag},
 		Meta: map[string]string{
-			ConsulSourceKey: ConsulSourceValue,
-			ConsulK8SNS:     svc.Namespace,
+			CloudSourceKey: CloudSourceValue,
+			CloudK8SNS:     svc.Namespace,
 		},
 	}
 
@@ -735,24 +735,24 @@ func (t *ServiceResource) registerServiceInstance(
 			r.Service.Address = addr
 			r.Service.Port = epPort
 			r.Service.Meta = make(map[string]string)
-			// Deepcopy baseService.Meta into r.Service.Meta as baseService is shared
+			// Deepcopy baseService.Meta into r.CatalogService.Meta as baseService is shared
 			// between all nodes of a service
 			for k, v := range baseService.Meta {
 				r.Service.Meta[k] = v
 			}
 			if subsetAddr.TargetRef != nil {
-				r.Service.Meta[ConsulK8SRefValue] = subsetAddr.TargetRef.Name
-				r.Service.Meta[ConsulK8SRefKind] = subsetAddr.TargetRef.Kind
+				r.Service.Meta[CloudK8SRefValue] = subsetAddr.TargetRef.Name
+				r.Service.Meta[CloudK8SRefKind] = subsetAddr.TargetRef.Kind
 			}
 			if subsetAddr.NodeName != nil {
-				r.Service.Meta[ConsulK8SNodeName] = *subsetAddr.NodeName
+				r.Service.Meta[CloudK8SNodeName] = *subsetAddr.NodeName
 			}
 
 			r.Check = &AgentCheck{
 				CheckID:   consulHealthCheckID(endpoints.Namespace, serviceID(r.Service.Service, addr)),
-				Name:      consulKubernetesCheckName,
+				Name:      cloudKubernetesCheckName,
 				Namespace: baseService.Namespace,
-				Type:      consulKubernetesCheckType,
+				Type:      cloudKubernetesCheckType,
 				Status:    HealthPassing,
 				ServiceID: serviceID(r.Service.Service, addr),
 				Output:    kubernetesSuccessReasonMsg,

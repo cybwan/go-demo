@@ -24,7 +24,7 @@ func main() {
 		}).WithContext(ctx)
 		//if serviceMap, _, err := consulClient.Catalog().Services(opts); err == nil {
 		//	for svc := range serviceMap {
-		//		if serviceEntries, _, err := consulClient.Health().Service(svc, "", false, nil); err == nil {
+		//		if serviceEntries, _, err := consulClient.Health().CatalogService(svc, "", false, nil); err == nil {
 		//			for index, serviceEntry := range serviceEntries {
 		//				bytes, _ := json.MarshalIndent(serviceEntry, "", " ")
 		//				pwd, _ := os.Getwd()

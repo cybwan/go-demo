@@ -276,7 +276,7 @@ func (s *ConsulSyncer) watchService(ctx context.Context, name, namespace string)
 		// Wait for service changes
 		var services []*CatalogService
 		err = backoff.Retry(func() error {
-			services, err = s.DiscClient.Service(name, s.ConsulK8STag, queryOpts)
+			services, err = s.DiscClient.CatalogService(name, s.ConsulK8STag, queryOpts)
 			return err
 		}, backoff.WithContext(backoff.NewExponentialBackOff(), ctx))
 		if err != nil {
@@ -330,7 +330,7 @@ func (s *ConsulSyncer) scheduleReapServiceLocked(name, namespace string) error {
 	}
 
 	// Only consider services that are tagged from k8s
-	services, err := s.DiscClient.Service(name, s.ConsulK8STag, &opts)
+	services, err := s.DiscClient.CatalogService(name, s.ConsulK8STag, &opts)
 	if err != nil {
 		return err
 	}

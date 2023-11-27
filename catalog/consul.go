@@ -13,8 +13,8 @@ type ConsulDiscoveryClient struct {
 	consulClient *api.Client
 }
 
-// Service is used to query catalog entries for a given service
-func (dc *ConsulDiscoveryClient) Service(service, tag string, q *QueryOptions) ([]*CatalogService, error) {
+// CatalogService is used to query catalog entries for a given service
+func (dc *ConsulDiscoveryClient) CatalogService(service, tag string, q *QueryOptions) ([]*CatalogService, error) {
 	// Set up query options
 	opts := api.QueryOptions{}
 	opts.AllowStale = q.AllowStale

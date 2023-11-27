@@ -5,8 +5,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/hashicorp/consul/api"
-	"github.com/hudl/fargo"
+	consul "github.com/hashicorp/consul/api"
+	eureka "github.com/hudl/fargo"
 )
 
 // AgentCheck represents a check known to the agent
@@ -20,8 +20,8 @@ type AgentCheck struct {
 	Output    string
 }
 
-func (ac *AgentCheck) toConsul() *api.AgentCheck {
-	check := new(api.AgentCheck)
+func (ac *AgentCheck) toConsul() *consul.AgentCheck {
+	check := new(consul.AgentCheck)
 	check.CheckID = ac.CheckID
 	check.ServiceID = ac.ServiceID
 	check.Name = ac.Name
@@ -37,14 +37,14 @@ type AgentWeights struct {
 	Warning int
 }
 
-func (aw *AgentWeights) toConsul() api.AgentWeights {
-	return api.AgentWeights{
+func (aw *AgentWeights) toConsul() consul.AgentWeights {
+	return consul.AgentWeights{
 		Passing: aw.Passing,
 		Warning: aw.Warning,
 	}
 }
 
-func (aw *AgentWeights) fromConsul(w api.AgentWeights) {
+func (aw *AgentWeights) fromConsul(w consul.AgentWeights) {
 	aw.Passing = w.Passing
 	aw.Warning = w.Warning
 }
@@ -61,8 +61,8 @@ type AgentService struct {
 	Meta      map[string]string
 }
 
-func (as *AgentService) toConsul() *api.AgentService {
-	agentService := new(api.AgentService)
+func (as *AgentService) toConsul() *consul.AgentService {
+	agentService := new(consul.AgentService)
 	agentService.ID = as.ID
 	agentService.Service = as.Service
 	agentService.Namespace = as.Namespace
@@ -81,7 +81,7 @@ func (as *AgentService) toConsul() *api.AgentService {
 	return agentService
 }
 
-func (as *AgentService) fromConsul(agentService *api.AgentService) {
+func (as *AgentService) fromConsul(agentService *consul.AgentService) {
 	as.ID = agentService.ID
 	as.Service = agentService.Service
 	as.Namespace = agentService.Namespace
@@ -106,16 +106,16 @@ type CatalogDeregistration struct {
 	Namespace string
 }
 
-func (cdr *CatalogDeregistration) toConsul() *api.CatalogDeregistration {
-	r := new(api.CatalogDeregistration)
+func (cdr *CatalogDeregistration) toConsul() *consul.CatalogDeregistration {
+	r := new(consul.CatalogDeregistration)
 	r.Node = cdr.Node
 	r.ServiceID = cdr.ServiceID
 	r.Namespace = cdr.Namespace
 	return r
 }
 
-func (cdr *CatalogDeregistration) toEureka() *fargo.Instance {
-	r := new(fargo.Instance)
+func (cdr *CatalogDeregistration) toEureka() *eureka.Instance {
+	r := new(eureka.Instance)
 	r.InstanceId = cdr.ServiceID
 	r.App = cdr.Service
 	return r
@@ -130,8 +130,8 @@ type CatalogRegistration struct {
 	SkipNodeUpdate bool
 }
 
-func (cr *CatalogRegistration) toConsul() *api.CatalogRegistration {
-	r := new(api.CatalogRegistration)
+func (cr *CatalogRegistration) toConsul() *consul.CatalogRegistration {
+	r := new(consul.CatalogRegistration)
 	r.Node = cr.Node
 	r.Address = cr.Address
 	if len(cr.NodeMeta) > 0 {
@@ -150,15 +150,15 @@ func (cr *CatalogRegistration) toConsul() *api.CatalogRegistration {
 	return r
 }
 
-func (cr *CatalogRegistration) toEureka() *fargo.Instance {
-	r := new(fargo.Instance)
+func (cr *CatalogRegistration) toEureka() *eureka.Instance {
+	r := new(eureka.Instance)
 	if len(cr.NodeMeta) > 0 {
 		for k, v := range cr.NodeMeta {
 			r.SetMetadataString(k, v)
 		}
 	}
 	if cr.Service != nil {
-		r.UniqueID = func(i fargo.Instance) string {
+		r.UniqueID = func(i eureka.Instance) string {
 			return cr.Service.ID
 		}
 		r.InstanceId = cr.Service.ID
@@ -168,8 +168,8 @@ func (cr *CatalogRegistration) toEureka() *fargo.Instance {
 		r.VipAddress = strings.ToLower(cr.Service.Service)
 		r.SecureVipAddress = strings.ToLower(cr.Service.Service)
 		r.Port = cr.Service.Port
-		r.Status = fargo.UP
-		r.DataCenterInfo = fargo.DataCenterInfo{Name: fargo.MyOwn}
+		r.Status = eureka.UP
+		r.DataCenterInfo = eureka.DataCenterInfo{Name: eureka.MyOwn}
 
 		r.HomePageUrl = fmt.Sprintf("http://%s:%d/", cr.Service.Address, cr.Service.Port)
 		r.StatusPageUrl = fmt.Sprintf("http://%s:%d/actuator/info", cr.Service.Address, cr.Service.Port)
@@ -184,7 +184,7 @@ type CatalogService struct {
 	ServiceName string
 }
 
-func (cs *CatalogService) fromConsul(svc *api.CatalogService) {
+func (cs *CatalogService) fromConsul(svc *consul.CatalogService) {
 	if svc == nil {
 		return
 	}
@@ -193,7 +193,7 @@ func (cs *CatalogService) fromConsul(svc *api.CatalogService) {
 	cs.ServiceName = svc.ServiceName
 }
 
-func (cs *CatalogService) fromEureka(svc *fargo.Instance) {
+func (cs *CatalogService) fromEureka(svc *eureka.Instance) {
 	if svc == nil {
 		return
 	}
@@ -206,7 +206,7 @@ type CatalogNodeServiceList struct {
 	Services []*AgentService
 }
 
-func (cnsl *CatalogNodeServiceList) fromConsul(svcList *api.CatalogNodeServiceList) {
+func (cnsl *CatalogNodeServiceList) fromConsul(svcList *consul.CatalogNodeServiceList) {
 	if svcList == nil || len(svcList.Services) == 0 {
 		return
 	}
@@ -243,8 +243,8 @@ type QueryOptions struct {
 	Filter string
 }
 
-func (qopts *QueryOptions) toConsul() *api.QueryOptions {
-	opts := new(api.QueryOptions)
+func (qopts *QueryOptions) toConsul() *consul.QueryOptions {
+	opts := new(consul.QueryOptions)
 	opts.AllowStale = qopts.AllowStale
 	opts.Namespace = qopts.Namespace
 	opts.WaitIndex = qopts.WaitIndex
@@ -256,7 +256,7 @@ func (qopts *QueryOptions) toConsul() *api.QueryOptions {
 
 type ServiceDiscoveryClient interface {
 	NodeServiceList(node string, q *QueryOptions) (*CatalogNodeServiceList, error)
-	Service(service, tag string, q *QueryOptions) ([]*CatalogService, error)
+	CatalogService(service, tag string, q *QueryOptions) ([]*CatalogService, error)
 	Register(reg *CatalogRegistration) error
 	Deregister(dereg *CatalogDeregistration) error
 	EnsureNamespaceExists(ns string, crossNSAClPolicy string) (bool, error)
