@@ -1,18 +1,18 @@
 {
  "Node": {
-  "ID": "62386f1e-57cf-577a-4ae3-5e83fd8499da",
-  "Node": "ubuntu20-ali-191",
-  "Address": "192.168.10.91",
+  "ID": "3947b67f-130c-1197-4174-ab3c7bda592a",
+  "Node": "consul-578ccd7c59-hj7g6",
+  "Address": "127.0.0.1",
   "Datacenter": "dc1",
   "TaggedAddresses": {
-   "lan": "192.168.10.91",
-   "wan": "192.168.10.91"
+   "lan": "127.0.0.1",
+   "wan": "127.0.0.1"
   },
   "Meta": {
    "consul-network-segment": ""
   },
-  "CreateIndex": 5,
-  "ModifyIndex": 6
+  "CreateIndex": 9,
+  "ModifyIndex": 10
  },
  "Service": {
   "ID": "consul",
@@ -32,8 +32,8 @@
    "Warning": 1
   },
   "EnableTagOverride": false,
-  "CreateIndex": 5,
-  "ModifyIndex": 5,
+  "CreateIndex": 9,
+  "ModifyIndex": 9,
   "Proxy": {
    "MeshGateway": {},
    "Expose": {}
@@ -42,7 +42,7 @@
  },
  "Checks": [
   {
-   "Node": "ubuntu20-ali-191",
+   "Node": "consul-578ccd7c59-hj7g6",
    "CheckID": "serfHealth",
    "Name": "Serf Health Status",
    "Status": "passing",
@@ -70,8 +70,8 @@
     "OSService": "",
     "GRPCUseTLS": false
    },
-   "CreateIndex": 5,
-   "ModifyIndex": 5
+   "CreateIndex": 9,
+   "ModifyIndex": 9
   }
  ]
 }

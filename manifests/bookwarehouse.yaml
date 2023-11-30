@@ -49,8 +49,6 @@ spec:
               value: "version=v1"
             - name: EUREKA_INSTANCE_METADATAMAP_VERSION
               value: v1
-#            - name: SPRING_CLOUD_CONSUL_HOST
-#              value: 'consul.default'
           readinessProbe:
             httpGet:
               path: /actuator/health

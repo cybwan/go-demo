@@ -11,13 +11,11 @@ import (
 func main() {
 	httpAddr := "http://127.0.0.1:8761/eureka"
 	eurekaClient := fargo.NewConn(httpAddr)
-	apps, err := eurekaClient.GetApps()
+	apps, err := eurekaClient.GetApp("BOOKSTORE")
 	if err != nil {
 		fmt.Println(err.Error())
 		os.Exit(-1)
 	}
-
-	fmt.Println(len(apps))
 
 	bytes, _ := json.MarshalIndent(apps, "", " ")
 	fmt.Println(string(bytes))
