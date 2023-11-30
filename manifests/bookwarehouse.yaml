@@ -10,6 +10,7 @@ spec:
   ports:
     - port: 14001
       name: bookwarehouse-port
+      appProtocol: HTTP
   selector:
     app: bookwarehouse
 ---
