@@ -9,13 +9,13 @@ deploy-consul:
 reboot-consul:
 	kubectl rollout restart deployment -n default consul
 
-.PHONY: deploy-eureka
-deploy-eureka:
+.PHONY: eureka-deploy
+eureka-deploy:
 	kubectl apply -n default -f ./manifests/eureka.yaml
 	kubectl wait --all --for=condition=ready pod -n default -l app=eureka --timeout=180s
 
-.PHONY: reboot-eureka
-reboot-eureka:
+.PHONY: eureka-reboot
+eureka-reboot:
 	kubectl rollout restart deployment -n default eureka
 
 .PHONY: deploy-bookwarehouse
@@ -113,11 +113,25 @@ port-forward-consul:
 	export POD=$$(kubectl get pods --selector app=consul -n default --no-headers | grep 'Running' | awk 'NR==1{print $$1}');\
 	kubectl port-forward "$$POD" -n default 8500:8500 --address 0.0.0.0 &
 
-.PHONY: port-forward-eureka
-port-forward-eureka:
+.PHONY: eureka-port-forward
+eureka-port-forward:
 	export POD=$$(kubectl get pods --selector app=eureka -n default --no-headers | grep 'Running' | awk 'NR==1{print $$1}');\
 	kubectl port-forward "$$POD" -n default 8761:8761 --address 0.0.0.0 &
 
 .PHONY: to-consul
 to-consul:
 	cd cmd/to-consul;go run .
+
+.PHONY: eureka-reg-services
+eureka-reg-services:
+	go run eureka/reg/main.go
+
+.PHONY: eureka-list-services
+eureka-list-services:
+	go run eureka/list/main.go | jq
+
+.PHONY: uninstall-fsm
+uninstall-fsm:
+	fsm uninstall mesh --delete-cluster-wide-resources || true
+	kubectl delete namespace derive-vm || true
+	kubectl delete namespace derive-eureka || true
