@@ -38,7 +38,7 @@ spec:
     spec:
       containers:
         - name: bookwarehouse
-          image: cybwan/bookwarehouse-consul:latest
+          image: localhost:5000/cybwan/bookwarehouse-consul:latest
           ports:
             - containerPort: 14001
           env:
