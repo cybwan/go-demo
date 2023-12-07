@@ -18,9 +18,23 @@ eureka-deploy:
 eureka-reboot:
 	kubectl rollout restart deployment -n default eureka
 
+.PHONY: deploy-curl
+deploy-curl: undeploy-curl
+	kubectl create namespace curl
+	fsm namespace add curl
+	kubectl apply -n curl -f ./manifests/curl.yaml
+	sleep 2
+	kubectl wait --all --for=condition=ready pod -n curl -l app=curl --timeout=180s
+
+.PHONY: undeploy-curl
+undeploy-curl:
+	kubectl delete deployments.apps -n curl curl --ignore-not-found
+	kubectl delete namespace curl --ignore-not-found
+
 .PHONY: deploy-bookwarehouse
 deploy-bookwarehouse: undeploy-bookwarehouse
 	kubectl create namespace bookwarehouse
+	fsm namespace add bookwarehouse
 	kubectl apply -n bookwarehouse -f ./manifests/bookwarehouse.yaml
 	sleep 2
 	kubectl wait --all --for=condition=ready pod -n bookwarehouse -l app=bookwarehouse --timeout=180s
@@ -130,8 +144,12 @@ eureka-reg-services:
 eureka-list-services:
 	go run eureka/list/main.go | jq
 
-.PHONY: uninstall-fsm
-uninstall-fsm:
+.PHONY: deploy-fsm-eureka
+deploy-fsm-eureka:
+	scripts/deploy-fsm-eureka.sh
+
+.PHONY: undeploy-fsm
+undeploy-fsm:
 	fsm uninstall mesh --delete-cluster-wide-resources || true
 	kubectl delete namespace derive-vm || true
 	kubectl delete namespace derive-eureka || true
