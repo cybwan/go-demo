@@ -86,14 +86,14 @@ kubectl apply -n derive-vm -f - <<EOF
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  name: vm
+  name: vm1
 ---
 kind: VirtualMachine
 apiVersion: machine.flomesh.io/v1alpha1
 metadata:
   name: vm6
 spec:
-  serviceAccountName: vm
+  serviceAccountName: vm1
   machineIP: 192.168.127.8
   services:
   - serviceName: bookwarehouse
