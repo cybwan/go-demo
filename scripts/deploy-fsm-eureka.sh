@@ -29,6 +29,7 @@ fsm install \
     --set fsm.fsmIngress.enabled=false \
     --set fsm.fsmGateway.enabled=true \
     --set=fsm.localDNSProxy.enable=true \
+    --set=fsm.localDNSProxy.wildcard.enable=true \
     --set=fsm.localDNSProxy.primaryUpstreamDNSServerIPAddr=$dns_svc_ip \
     --set fsm.featureFlags.enableValidateHTTPRouteHostnames=false \
     --set fsm.featureFlags.enableValidateGRPCRouteHostnames=false \
