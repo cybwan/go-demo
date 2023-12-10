@@ -152,6 +152,10 @@ deploy-fsm-eureka:
 deploy-fsm-eureka-c2:
 	scripts/deploy-fsm-eureka-c2.sh
 
+.PHONY: deploy-fsm-eureka-c3
+deploy-fsm-eureka-c3:
+	scripts/deploy-fsm-eureka-c3.sh
+
 .PHONY: undeploy-fsm
 undeploy-fsm:
 	fsm uninstall mesh --delete-cluster-wide-resources || true
