@@ -148,6 +148,10 @@ eureka-list-services:
 deploy-fsm-eureka:
 	scripts/deploy-fsm-eureka.sh
 
+.PHONY: deploy-fsm-eureka-c2
+deploy-fsm-eureka-c2:
+	scripts/deploy-fsm-eureka-c2.sh
+
 .PHONY: undeploy-fsm
 undeploy-fsm:
 	fsm uninstall mesh --delete-cluster-wide-resources || true
