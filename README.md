@@ -44,5 +44,16 @@ https://www.zeng.dev/post/20200428-eureka-multil-cluster-replica/
 https://github.com/Haybu/spring-cloud-k8s-eureka-controller
 
 https://www.python100.com/html/104745.html
+
+https://medium.com/@fahimfarookme/the-mystery-of-eureka-health-monitoring-fd05fe757928
+https://blog.csdn.net/xiao_jun_0820/article/details/77991963
+
+https://kubernetes.io/docs/reference/using-api/health-checks/
+
+https://www.reddit.com/r/kubernetes/comments/15l8ofh/how_to_check_health_of_api_server_endpoints_using/
+
+https://blog.csdn.net/weixin_39128119/article/details/110875550
+
+github.com/SimonWang00/goeureka
 ```
 

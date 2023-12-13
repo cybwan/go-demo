@@ -22,14 +22,4 @@ func main() {
 		bytes, _ := json.MarshalIndent(apps, "", " ")
 		fmt.Println(string(bytes))
 	}
-	//{
-	//	app, err := eurekaClient.GetApp("httpbin")
-	//	if err != nil {
-	//		fmt.Println(err.Error())
-	//		os.Exit(-1)
-	//	}
-	//
-	//	bytes, _ := json.MarshalIndent(app, "", " ")
-	//	fmt.Println(string(bytes))
-	//}
 }

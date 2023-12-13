@@ -41,8 +41,7 @@ deploy-bookwarehouse: undeploy-bookwarehouse
 
 .PHONY: undeploy-bookwarehouse
 undeploy-bookwarehouse:
-	kubectl delete deployments.apps -n bookwarehouse bookwarehouse --ignore-not-found
-	kubectl delete namespace bookwarehouse --ignore-not-found
+	kubectl delete -n bookwarehouse -f ./manifests/bookwarehouse.yaml --ignore-not-found
 
 .PHONY: deploy-consul-bookwarehouse
 deploy-consul-bookwarehouse: undeploy-consul-bookwarehouse
@@ -93,8 +92,7 @@ deploy-eureka-bookwarehouse: undeploy-eureka-bookwarehouse
 
 .PHONY: undeploy-eureka-bookwarehouse
 undeploy-eureka-bookwarehouse:
-	kubectl delete deployments.apps -n bookwarehouse bookwarehouse --ignore-not-found
-	kubectl delete namespace bookwarehouse --ignore-not-found
+	kubectl delete -n bookwarehouse -f ./manifests/eureka/bookwarehouse-eureka.yaml --ignore-not-found
 
 .PHONY: deploy-eureka-bookstore
 deploy-eureka-bookstore: undeploy-eureka-bookstore
@@ -106,8 +104,7 @@ deploy-eureka-bookstore: undeploy-eureka-bookstore
 
 .PHONY: undeploy-eureka-bookstore
 undeploy-eureka-bookstore:
-	kubectl delete deployments.apps -n bookstore bookstore --ignore-not-found
-	kubectl delete namespace bookstore --ignore-not-found
+	kubectl delete -n bookstore -f ./manifests/eureka/bookstore-eureka.yaml --ignore-not-found
 
 .PHONY: deploy-eureka-bookbuyer
 deploy-eureka-bookbuyer: undeploy-eureka-bookbuyer
@@ -119,8 +116,19 @@ deploy-eureka-bookbuyer: undeploy-eureka-bookbuyer
 
 .PHONY: undeploy-eureka-bookbuyer
 undeploy-eureka-bookbuyer:
-	kubectl delete deployments.apps -n bookbuyer bookbuyer --ignore-not-found
-	kubectl delete namespace bookbuyer --ignore-not-found
+	kubectl delete -n bookbuyer -f ./manifests/eureka/bookbuyer-eureka.yaml --ignore-not-found
+
+.PHONY: deploy-eureka-bookthief
+deploy-eureka-bookthief: undeploy-eureka-bookthief
+	kubectl delete namespace bookthief --ignore-not-found
+	kubectl create namespace bookthief
+	kubectl apply -n bookthief -f ./manifests/eureka/bookthief-eureka.yaml
+	sleep 2
+	kubectl wait --all --for=condition=ready pod -n bookthief -l app=bookthief --timeout=180s
+
+.PHONY: undeploy-eureka-bookthief
+undeploy-eureka-bookthief:
+	kubectl delete -n bookthief -f ./manifests/eureka/bookthief-eureka.yaml --ignore-not-found
 
 .PHONY: port-forward-consul
 port-forward-consul:
