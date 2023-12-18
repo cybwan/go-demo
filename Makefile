@@ -33,6 +33,7 @@ undeploy-curl:
 
 .PHONY: deploy-bookwarehouse
 deploy-bookwarehouse: undeploy-bookwarehouse
+	kubectl delete namespace bookwarehouse --ignore-not-found
 	kubectl create namespace bookwarehouse
 	fsm namespace add bookwarehouse
 	kubectl apply -n bookwarehouse -f ./manifests/bookwarehouse.yaml

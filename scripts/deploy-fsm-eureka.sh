@@ -53,7 +53,10 @@ fsm install \
     --set=fsm.cloudConnector.machine.syncToK8S.withGatewayEgress.enable=true \
     --set=fsm.cloudConnector.gateway.ingress.ipSelector=ClusterIP \
     --set=fsm.cloudConnector.gateway.ingress.httpPort=10080 \
+    --set=fsm.cloudConnector.gateway.ingress.grpcPort=10180 \
+    --set=fsm.cloudConnector.gateway.egress.ipSelector=ClusterIP \
     --set=fsm.cloudConnector.gateway.egress.httpPort=10090 \
+    --set=fsm.cloudConnector.gateway.egress.grpcPort=10190 \
     --set=fsm.cloudConnector.gateway.syncToFgw.enable=true \
     --set "fsm.cloudConnector.gateway.syncToFgw.denyK8sNamespaces={default,kube-system,fsm-system}" \
     --timeout=900s
@@ -81,24 +84,30 @@ spec:
     - protocol: HTTP
       port: 10090
       name: egress-proxy
+    - protocol: HTTP
+      port: 10180
+      name: ingress-grpc-proxy
+    - protocol: HTTP
+      port: 10190
+      name: egress-grpc-proxy
 EOF
 
-kubectl apply -n derive-vm -f - <<EOF
-apiVersion: v1
-kind: ServiceAccount
-metadata:
-  name: vm1
----
-kind: VirtualMachine
-apiVersion: machine.flomesh.io/v1alpha1
-metadata:
-  name: vm6
-spec:
-  serviceAccountName: vm1
-  machineIP: 192.168.127.8
-  services:
-  - serviceName: bookwarehouse
-    port: 14001
-  - serviceName: bookdemo
-    port: 10011
-EOF
+#kubectl apply -n derive-vm -f - <<EOF
+#apiVersion: v1
+#kind: ServiceAccount
+#metadata:
+#  name: vm1
+#---
+#kind: VirtualMachine
+#apiVersion: machine.flomesh.io/v1alpha1
+#metadata:
+#  name: vm6
+#spec:
+#  serviceAccountName: vm1
+#  machineIP: 192.168.127.8
+#  services:
+#  - serviceName: bookwarehouse
+#    port: 14001
+#  - serviceName: bookdemo
+#    port: 10011
+#EOF
