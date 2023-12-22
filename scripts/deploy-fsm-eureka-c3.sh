@@ -18,7 +18,7 @@ fsm install \
     --set=fsm.image.registry=localhost:5000/flomesh \
     --set=fsm.image.tag=latest \
     --set=fsm.image.pullPolicy=Always \
-    --set=fsm.sidecarLogLevel=warn \
+    --set=fsm.sidecar.sidecarLogLevel=warn \
     --set=fsm.controllerLogLevel=warn \
     --set=fsm.serviceAccessMode=mixed \
     --set=fsm.featureFlags.enableAutoDefaultRoute=true \
