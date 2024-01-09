@@ -18,6 +18,15 @@ eureka-deploy:
 eureka-reboot:
 	kubectl rollout restart deployment -n default eureka
 
+.PHONY: nacos-deploy
+nacos-deploy:
+	kubectl apply -n default -f ./manifests/nacos.yaml
+	kubectl wait --all --for=condition=ready pod -n default -l app=nacos --timeout=180s
+
+.PHONY: nacos-reboot
+nacos-reboot:
+	kubectl rollout restart deployment -n default nacos
+
 .PHONY: deploy-curl
 deploy-curl: undeploy-curl
 	kubectl create namespace curl
@@ -87,49 +96,104 @@ undeploy-consul-bookbuyer:
 deploy-eureka-bookwarehouse: undeploy-eureka-bookwarehouse
 	kubectl delete namespace bookwarehouse --ignore-not-found
 	kubectl create namespace bookwarehouse
-	kubectl apply -n bookwarehouse -f ./manifests/eureka/bookwarehouse-eureka.yaml
+	kubectl apply -n bookwarehouse -f ./manifests/eureka/bookwarehouse.yaml
 	sleep 2
 	kubectl wait --all --for=condition=ready pod -n bookwarehouse -l app=bookwarehouse --timeout=180s
 
 .PHONY: undeploy-eureka-bookwarehouse
 undeploy-eureka-bookwarehouse:
-	kubectl delete -n bookwarehouse -f ./manifests/eureka/bookwarehouse-eureka.yaml --ignore-not-found
+	kubectl delete -n bookwarehouse -f ./manifests/eureka/bookwarehouse.yaml --ignore-not-found
 
 .PHONY: deploy-eureka-bookstore
 deploy-eureka-bookstore: undeploy-eureka-bookstore
 	kubectl delete namespace bookstore --ignore-not-found
 	kubectl create namespace bookstore
-	kubectl apply -n bookstore -f ./manifests/eureka/bookstore-eureka.yaml
+	kubectl apply -n bookstore -f ./manifests/eureka/bookstore.yaml
 	sleep 2
 	kubectl wait --all --for=condition=ready pod -n bookstore -l app=bookstore --timeout=180s
 
 .PHONY: undeploy-eureka-bookstore
 undeploy-eureka-bookstore:
-	kubectl delete -n bookstore -f ./manifests/eureka/bookstore-eureka.yaml --ignore-not-found
+	kubectl delete -n bookstore -f ./manifests/eureka/bookstore.yaml --ignore-not-found
 
 .PHONY: deploy-eureka-bookbuyer
 deploy-eureka-bookbuyer: undeploy-eureka-bookbuyer
 	kubectl delete namespace bookbuyer --ignore-not-found
 	kubectl create namespace bookbuyer
-	kubectl apply -n bookbuyer -f ./manifests/eureka/bookbuyer-eureka.yaml
+	kubectl apply -n bookbuyer -f ./manifests/eureka/bookbuyer.yaml
 	sleep 2
 	kubectl wait --all --for=condition=ready pod -n bookbuyer -l app=bookbuyer --timeout=180s
 
 .PHONY: undeploy-eureka-bookbuyer
 undeploy-eureka-bookbuyer:
-	kubectl delete -n bookbuyer -f ./manifests/eureka/bookbuyer-eureka.yaml --ignore-not-found
+	kubectl delete -n bookbuyer -f ./manifests/eureka/bookbuyer.yaml --ignore-not-found
 
 .PHONY: deploy-eureka-bookthief
 deploy-eureka-bookthief: undeploy-eureka-bookthief
 	kubectl delete namespace bookthief --ignore-not-found
 	kubectl create namespace bookthief
-	kubectl apply -n bookthief -f ./manifests/eureka/bookthief-eureka.yaml
+	kubectl apply -n bookthief -f ./manifests/eureka/bookthief.yaml
 	sleep 2
 	kubectl wait --all --for=condition=ready pod -n bookthief -l app=bookthief --timeout=180s
 
 .PHONY: undeploy-eureka-bookthief
 undeploy-eureka-bookthief:
-	kubectl delete -n bookthief -f ./manifests/eureka/bookthief-eureka.yaml --ignore-not-found
+	kubectl delete -n bookthief -f ./manifests/eureka/bookthief.yaml --ignore-not-found
+
+
+.PHONY: deploy-nacos-bookwarehouse
+deploy-nacos-bookwarehouse: undeploy-nacos-bookwarehouse
+	kubectl delete namespace bookwarehouse --ignore-not-found
+	kubectl create namespace bookwarehouse
+	kubectl apply -n bookwarehouse -f ./manifests/nacos/bookwarehouse.yaml
+	sleep 2
+	kubectl wait --all --for=condition=ready pod -n bookwarehouse -l app=bookwarehouse --timeout=180s
+
+.PHONY: undeploy-nacos-bookwarehouse
+undeploy-nacos-bookwarehouse:
+	kubectl delete -n bookwarehouse -f ./manifests/nacos/bookwarehouse.yaml --ignore-not-found
+
+.PHONY: deploy-nacos-bookstore
+deploy-nacos-bookstore: undeploy-nacos-bookstore
+	kubectl delete namespace bookstore --ignore-not-found
+	kubectl create namespace bookstore
+	kubectl apply -n bookstore -f ./manifests/nacos/bookstore.yaml
+	sleep 2
+	kubectl wait --all --for=condition=ready pod -n bookstore -l app=bookstore --timeout=180s
+
+.PHONY: undeploy-nacos-bookstore
+undeploy-nacos-bookstore:
+	kubectl delete -n bookstore -f ./manifests/nacos/bookstore.yaml --ignore-not-found
+
+.PHONY: deploy-nacos-bookbuyer
+deploy-nacos-bookbuyer: undeploy-nacos-bookbuyer
+	kubectl delete namespace bookbuyer --ignore-not-found
+	kubectl create namespace bookbuyer
+	kubectl apply -n bookbuyer -f ./manifests/nacos/bookbuyer.yaml
+	sleep 2
+	kubectl wait --all --for=condition=ready pod -n bookbuyer -l app=bookbuyer --timeout=180s
+
+.PHONY: undeploy-nacos-bookbuyer
+undeploy-nacos-bookbuyer:
+	kubectl delete -n bookbuyer -f ./manifests/nacos/bookbuyer.yaml --ignore-not-found
+
+.PHONY: deploy-nacos-bookthief
+deploy-nacos-bookthief: undeploy-nacos-bookthief
+	kubectl delete namespace bookthief --ignore-not-found
+	kubectl create namespace bookthief
+	kubectl apply -n bookthief -f ./manifests/nacos/bookthief.yaml
+	sleep 2
+	kubectl wait --all --for=condition=ready pod -n bookthief -l app=bookthief --timeout=180s
+
+.PHONY: undeploy-nacos-bookthief
+undeploy-nacos-bookthief:
+	kubectl delete -n bookthief -f ./manifests/nacos/bookthief.yaml --ignore-not-found
+
+.PHONY: deploy-nacos
+deploy-nacos: deploy-nacos-bookwarehouse deploy-nacos-bookstore deploy-nacos-bookbuyer
+
+.PHONY: undeploy-nacos
+undeploy-nacos: undeploy-nacos-bookbuyer undeploy-nacos-bookstore undeploy-nacos-bookwarehouse
 
 .PHONY: port-forward-consul
 port-forward-consul:
@@ -140,6 +204,16 @@ port-forward-consul:
 eureka-port-forward:
 	export POD=$$(kubectl get pods --selector app=eureka -n default --no-headers | grep 'Running' | awk 'NR==1{print $$1}');\
 	kubectl port-forward "$$POD" -n default 8761:8761 --address 0.0.0.0 &
+
+.PHONY: nacos-port-forward
+nacos-port-forward:
+	export POD=$$(kubectl get pods --selector app=nacos -n default --no-headers | grep 'Running' | awk 'NR==1{print $$1}');\
+	kubectl port-forward "$$POD" -n default 8848:8848 --address 0.0.0.0 &
+
+.PHONY: bookbuyer-port-forward
+bookbuyer-port-forward:
+	export POD=$$(kubectl get pods --selector app=bookbuyer -n bookbuyer --no-headers | grep 'Running' | awk 'NR==1{print $$1}');\
+	kubectl port-forward "$$POD" -n bookbuyer 14001:14001 --address 0.0.0.0 &
 
 .PHONY: to-consul
 to-consul:

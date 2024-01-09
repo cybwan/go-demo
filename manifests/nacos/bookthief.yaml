@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: bookstore-application-yml
+  name: bookthief-application-yml
 data:
   application.yml: |
     # 应用端口
@@ -30,64 +30,57 @@ data:
     spring:
       application:
         # 应用名称
-        name: bookstore
-    
-    eureka:
-      client:
-        registerWithEureka: true
-        fetchRegistry: true
-        gZipContent: false
-        serviceUrl:
-          defaultZone: http://eureka.default.svc.cluster.local:8761/eureka/
-      instance:
-        instance-id: ${spring.application.name}:${random.value}
-        prefer-ip-address: true
+        name: bookthief
+      cloud:
+        nacos:
+          discovery:
+            server-addr: nacos.default:8848
 
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: bookstore
+  name: bookthief
   labels:
-    version: v2
+    version: v1
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: bookstore
-      version: v2
+      app: bookthief
+      version: v1
   template:
     metadata:
       labels:
-        app: bookstore
-        version: v2
+        app: bookthief
+        version: v1
       annotations:
         prometheus.io/scrape: "true"
         prometheus.io/path: "/actuator/prometheus"
         prometheus.io/port: "14001"
     spec:
       containers:
-        - name: bookstore
-          image: cybwan/springboot-demo:latest
+        - name: bookthief
+          image: localhost:5000/cybwan/springboot-demo:latest
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 14001
           env:
             - name: IDENTITY
-              value: bookstore
+              value: bookthief
             - name: EUREKA_INSTANCE_METADATAMAP_VERSION
               value: v1
             - name: JAVA_OPTS
               value: -Xms256M -Xmx512M
             - name: JAVA_TOOL_OPTIONS
-              value: -javaagent:./opentelemetry-javaagent.jar -Dotel.resource.attributes=service.name=bookstore
+              value: -javaagent:./opentelemetry-javaagent.jar -Dotel.resource.attributes=service.name=bookthief
           command: ['java']
           args: [
             "-Dotel.traces.exporter=logging",
             "-Dotel.metrics.exporter=none",
             "-Dotel.propagators=tracecontext,baggage,b3multi",
             "-jar",
-            "bookstore-eureka.jar",
+            "bookthief-nacos.jar",
           ]
           volumeMounts:
             - mountPath: /config
@@ -107,7 +100,7 @@ spec:
       volumes:
         - name: javacfg
           configMap:
-            name: bookstore-application-yml
+            name: bookthief-application-yml
             items:
               - key: "application.yml"
                 path: "application.yml"

@@ -1,22 +1,3 @@
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: bookwarehouse
-  namespace: bookwarehouse
-  labels:
-    app: bookwarehouse
-spec:
-  ports:
-    - port: 14001
-      name: bookwarehouse-http-port
-      appProtocol: HTTP
-    - port: 9091
-      name: bookwarehouse-grpc-port
-      appProtocol: GRPC
-  selector:
-    app: bookwarehouse
----
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -33,7 +14,7 @@ data:
     logging:
       level:
         root: INFO
-        org.springframework.web.filter.CommonsRequestLoggingFilter: INFO
+        org.springframework.web.filter.CommonsRequestLoggingFilter: INFO    
     
     management:
       endpoints:
@@ -45,6 +26,10 @@ data:
       application:
         # 应用名称
         name: bookwarehouse
+      cloud:
+        nacos:
+          discovery:
+            server-addr: nacos.default:8848
 
 ---
 apiVersion: apps/v1
@@ -79,8 +64,6 @@ spec:
           env:
             - name: IDENTITY
               value: bookwarehouse
-            - name: EUREKA_INSTANCE_METADATAMAP_VERSION
-              value: v1
             - name: JAVA_OPTS
               value: -Xms256M -Xmx512M
             - name: JAVA_TOOL_OPTIONS
@@ -91,7 +74,7 @@ spec:
             "-Dotel.metrics.exporter=none",
             "-Dotel.propagators=tracecontext,baggage,b3multi",
             "-jar",
-            "bookwarehouse.jar",
+            "bookwarehouse-nacos.jar",
           ]
           volumeMounts:
             - mountPath: /config

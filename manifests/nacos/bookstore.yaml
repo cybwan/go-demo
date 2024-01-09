@@ -1,26 +1,7 @@
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: bookwarehouse
-  namespace: bookwarehouse
-  labels:
-    app: bookwarehouse
-spec:
-  ports:
-    - port: 14001
-      name: bookwarehouse-http-port
-      appProtocol: HTTP
-    - port: 9091
-      name: bookwarehouse-grpc-port
-      appProtocol: GRPC
-  selector:
-    app: bookwarehouse
----
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: bookwarehouse-application-yml
+  name: bookstore-application-yml
 data:
   application.yml: |
     # 应用端口
@@ -29,6 +10,11 @@ data:
     grpc:
       server:
         port: 9091
+      client:
+        GLOBAL:
+          negotiation-type: plaintext
+          enable-keep-alive: true
+          keep-alive-without-calls: true
     
     logging:
       level:
@@ -44,25 +30,29 @@ data:
     spring:
       application:
         # 应用名称
-        name: bookwarehouse
-
+        name: bookstore
+      cloud:
+        nacos:
+          discovery:
+            server-addr: nacos.default:8848
+        
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: bookwarehouse
+  name: bookstore
   labels:
     version: v1
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: bookwarehouse
+      app: bookstore
       version: v1
   template:
     metadata:
       labels:
-        app: bookwarehouse
+        app: bookstore
         version: v1
       annotations:
         prometheus.io/scrape: "true"
@@ -70,7 +60,7 @@ spec:
         prometheus.io/port: "14001"
     spec:
       containers:
-        - name: bookwarehouse
+        - name: bookstore
           image: localhost:5000/cybwan/springboot-demo:latest
           imagePullPolicy: IfNotPresent
           ports:
@@ -78,20 +68,20 @@ spec:
             - containerPort: 9091
           env:
             - name: IDENTITY
-              value: bookwarehouse
+              value: bookstore
             - name: EUREKA_INSTANCE_METADATAMAP_VERSION
               value: v1
             - name: JAVA_OPTS
               value: -Xms256M -Xmx512M
             - name: JAVA_TOOL_OPTIONS
-              value: -javaagent:./opentelemetry-javaagent.jar -Dotel.resource.attributes=service.name=bookwarehouse
+              value: -javaagent:./opentelemetry-javaagent.jar -Dotel.resource.attributes=service.name=bookstore
           command: ['java']
           args: [
             "-Dotel.traces.exporter=logging",
             "-Dotel.metrics.exporter=none",
             "-Dotel.propagators=tracecontext,baggage,b3multi",
             "-jar",
-            "bookwarehouse.jar",
+            "bookstore-nacos.jar",
           ]
           volumeMounts:
             - mountPath: /config
@@ -111,7 +101,7 @@ spec:
       volumes:
         - name: javacfg
           configMap:
-            name: bookwarehouse-application-yml
+            name: bookstore-application-yml
             items:
               - key: "application.yml"
                 path: "application.yml"
