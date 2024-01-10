@@ -239,8 +239,14 @@ deploy-fsm-eureka-c2:
 deploy-fsm-eureka-c3:
 	scripts/deploy-fsm-eureka-c3.sh
 
+.PHONY: deploy-fsm-nacos
+deploy-fsm-nacos:
+	scripts/deploy-fsm-nacos.sh
+
 .PHONY: undeploy-fsm
 undeploy-fsm:
 	fsm uninstall mesh --delete-cluster-wide-resources || true
 	kubectl delete namespace derive-vm || true
 	kubectl delete namespace derive-eureka || true
+	kubectl delete namespace derive-consul || true
+	kubectl delete namespace derive-nacos || true

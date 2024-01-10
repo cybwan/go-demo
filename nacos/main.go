@@ -36,48 +36,81 @@ func main() {
 		panic(err)
 	}
 
-	//client.DeregisterInstance(vo.DeregisterInstanceParam{
-	//	Ip:          "10.0.0.14",
-	//	Port:        8848,
-	//	ServiceName: "demo.go",
-	//	GroupName:   "group-b",
-	//})
-	//
-	success, err := client.RegisterInstance(vo.RegisterInstanceParam{
-		Ip:          "10.0.0.14",
-		Port:        8848,
-		ServiceName: "bookwarehouse",
-		Weight:      10,
-		ClusterName: "cluster-b",
+	instances, err := client.SelectInstances(vo.SelectInstancesParam{
+		ServiceName: "bookstore",
 		GroupName:   "DEFAULT_GROUP",
-		Enable:      true,
-		Healthy:     true,
-		Ephemeral:   true,
-	})
-	//if err != nil {
-	//	panic(err)
-	//}
-	fmt.Println(success)
-
-	serviceList, err := client.GetAllServicesInfo(vo.GetAllServiceInfoParam{
-		PageNo:   1,
-		PageSize: 10,
+		Clusters:    []string{"DEFAULT"},
+		HealthyOnly: true,
 	})
 	if err != nil {
 		panic(err)
 	}
-	for _, svc := range serviceList.Doms {
-		fmt.Printf("Service: %s\n", svc)
-		instances, err := client.SelectAllInstances(vo.SelectAllInstancesParam{
-			ServiceName: svc,
-		})
-		if err != nil {
-			panic(err)
-		}
-		bytes, _ := json.MarshalIndent(instances, "", " ")
-		fmt.Println(string(bytes))
-		for _, instance := range instances {
-			fmt.Printf("Service instance: %s:%d\n", instance.Ip, instance.Port)
-		}
-	}
+	bytes, _ := json.MarshalIndent(instances, "", " ")
+	fmt.Println(string(bytes))
+
+	//{
+	//	success, err := client.RegisterInstance(vo.RegisterInstanceParam{
+	//		Ip:          "10.0.0.14",
+	//		Port:        8848,
+	//		ServiceName: "bookwarehouseAAAA",
+	//		Weight:      10,
+	//		ClusterName: "DEFAULT",
+	//		GroupName:   "DEFAULT_GROUP",
+	//		Enable:      true,
+	//		Healthy:     true,
+	//		Ephemeral:   false,
+	//	})
+	//	//if err != nil {
+	//	//	panic(err)
+	//	//}
+	//	fmt.Println("RegisterInstance", success, err)
+	//}
+
+	//{
+	//	success, err := client.DeregisterInstance(vo.DeregisterInstanceParam{
+	//		Ip:          "10.0.0.14",
+	//		Port:        8848,
+	//		ServiceName: "bookwarehouseAAAA",
+	//		//Cluster:     "DEFAULT",
+	//		GroupName: "DEFAULT_GROUP",
+	//		Ephemeral: false,
+	//	})
+	//	fmt.Println("DeregisterInstance", success, err)
+	//	time.Sleep(time.Second)
+	//}
+
+	//
+	////serviceList, err := client.GetAllServicesInfo(vo.GetAllServiceInfoParam{
+	////	PageNo:   1,
+	////	PageSize: 10,
+	////})
+	////if err != nil {
+	////	panic(err)
+	////}
+	////for _, svc := range serviceList.Doms {
+	//for _, svc := range []string{"bookstore"} {
+	//	fmt.Printf("Service: %s\n", svc)
+	//	service, err := client.GetService(vo.GetServiceParam{
+	//		ServiceName: svc,
+	//		Clusters:    []string{"cluster-b", "DEFAULT"},
+	//	})
+	//	if err != nil {
+	//		panic(err)
+	//	}
+	//	bytes, _ := json.MarshalIndent(service, "", " ")
+	//	fmt.Println(string(bytes))
+	//
+	//	instances, err := client.SelectAllInstances(vo.SelectAllInstancesParam{
+	//		ServiceName: svc,
+	//		Clusters:    []string{"cluster-b", "DEFAULT"},
+	//	})
+	//	if err != nil {
+	//		panic(err)
+	//	}
+	//	bytes, _ = json.MarshalIndent(instances, "", " ")
+	//	fmt.Println(string(bytes))
+	//	for _, instance := range instances {
+	//		fmt.Printf("Service instance: %s:%d\n", instance.Ip, instance.Port)
+	//	}
+	//}
 }
