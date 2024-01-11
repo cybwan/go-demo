@@ -53,7 +53,6 @@ fsm install \
     --set=fsm.cloudConnector.eureka.deriveNamespace=derive-eureka \
     --set=fsm.cloudConnector.eureka.httpAddr=http://$eureka_svc_addr:8761/eureka \
     --set=fsm.cloudConnector.eureka.syncToK8S.enable=true \
-    --set=fsm.cloudConnector.eureka.syncToK8S.passingOnly=false \
     --set=fsm.cloudConnector.eureka.syncToK8S.suffixMetadata=version \
     --set=fsm.cloudConnector.eureka.syncToK8S.withGateway.enable=false \
     --set=fsm.cloudConnector.eureka.syncFromK8S.enable=true \
