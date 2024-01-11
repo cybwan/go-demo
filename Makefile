@@ -247,6 +247,10 @@ deploy-fsm-nacos:
 deploy-fsm-consul:
 	scripts/deploy-fsm-consul.sh
 
+.PHONY: deploy-fsm
+deploy-fsm:
+	scripts/deploy-fsm.sh
+
 .PHONY: undeploy-fsm
 undeploy-fsm:
 	fsm uninstall mesh --delete-cluster-wide-resources || true
