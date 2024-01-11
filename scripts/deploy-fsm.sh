@@ -67,7 +67,7 @@ fsm install \
     --set=fsm.cloudConnector.nacos.syncFromK8S.enable=true \
     --set "fsm.cloudConnector.nacos.syncFromK8S.allowK8sNamespaces={derive-consul,derive-eureka,bookwarehouse}" \
     --set=fsm.cloudConnector.nacos.syncFromK8S.withGateway.enable=false \
-    --set=fsm.cloudConnector.machine.enable=false \
+    --set=fsm.cloudConnector.machine.enable=true \
     --set=fsm.cloudConnector.machine.asInternalServices=false \
     --set=fsm.cloudConnector.machine.deriveNamespace=derive-vm \
     --set=fsm.cloudConnector.machine.syncToK8S.enable=true \
