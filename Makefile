@@ -1,12 +1,12 @@
 #!make
 
-.PHONY: deploy-consul
-deploy-consul:
+.PHONY: consul-deploy
+consul-deploy:
 	kubectl apply -n default -f ./manifests/consul.yaml
 	kubectl wait --all --for=condition=ready pod -n default -l app=consul --timeout=180s
 
-.PHONY: reboot-consul
-reboot-consul:
+.PHONY: consul-reboot
+consul-reboot:
 	kubectl rollout restart deployment -n default consul
 
 .PHONY: eureka-deploy
@@ -44,7 +44,7 @@ undeploy-curl:
 deploy-bookwarehouse: undeploy-bookwarehouse
 	kubectl delete namespace bookwarehouse --ignore-not-found
 	kubectl create namespace bookwarehouse
-	fsm namespace add bookwarehouse
+	#fsm namespace add bookwarehouse
 	kubectl apply -n bookwarehouse -f ./manifests/bookwarehouse.yaml
 	sleep 2
 	kubectl wait --all --for=condition=ready pod -n bookwarehouse -l app=bookwarehouse --timeout=180s
@@ -195,8 +195,8 @@ deploy-nacos: deploy-nacos-bookwarehouse deploy-nacos-bookstore deploy-nacos-boo
 .PHONY: undeploy-nacos
 undeploy-nacos: undeploy-nacos-bookbuyer undeploy-nacos-bookstore undeploy-nacos-bookwarehouse
 
-.PHONY: port-forward-consul
-port-forward-consul:
+.PHONY: consul-port-forward
+consul-port-forward:
 	export POD=$$(kubectl get pods --selector app=consul -n default --no-headers | grep 'Running' | awk 'NR==1{print $$1}');\
 	kubectl port-forward "$$POD" -n default 8500:8500 --address 0.0.0.0 &
 
@@ -242,6 +242,10 @@ deploy-fsm-eureka-c3:
 .PHONY: deploy-fsm-nacos
 deploy-fsm-nacos:
 	scripts/deploy-fsm-nacos.sh
+
+.PHONY: deploy-fsm-consul
+deploy-fsm-consul:
+	scripts/deploy-fsm-consul.sh
 
 .PHONY: undeploy-fsm
 undeploy-fsm:

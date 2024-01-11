@@ -42,15 +42,15 @@ fsm install \
     --set=fsm.cloudConnector.eureka.syncToK8S.enable=true \
     --set=fsm.cloudConnector.eureka.syncToK8S.passingOnly=false \
     --set=fsm.cloudConnector.eureka.syncToK8S.suffixMetadata=version \
-    --set=fsm.cloudConnector.eureka.syncToK8S.withGateway.enable=true \
+    --set=fsm.cloudConnector.eureka.syncToK8S.withGateway.enable=false \
     --set=fsm.cloudConnector.eureka.syncFromK8S.enable=true \
     --set "fsm.cloudConnector.eureka.syncFromK8S.denyK8sNamespaces={default,kube-system,fsm-system}" \
-    --set=fsm.cloudConnector.eureka.syncFromK8S.withGateway.enable=true \
-    --set=fsm.cloudConnector.machine.enable=true \
+    --set=fsm.cloudConnector.eureka.syncFromK8S.withGateway.enable=false \
+    --set=fsm.cloudConnector.machine.enable=false \
     --set=fsm.cloudConnector.machine.asInternalServices=false \
     --set=fsm.cloudConnector.machine.deriveNamespace=derive-vm \
     --set=fsm.cloudConnector.machine.syncToK8S.enable=true \
-    --set=fsm.cloudConnector.machine.syncToK8S.withGatewayEgress.enable=true \
+    --set=fsm.cloudConnector.machine.syncToK8S.withGateway.enable=true \
     --set=fsm.cloudConnector.gateway.ingress.ipSelector=ClusterIP \
     --set=fsm.cloudConnector.gateway.ingress.httpPort=10080 \
     --set=fsm.cloudConnector.gateway.ingress.grpcPort=10180 \

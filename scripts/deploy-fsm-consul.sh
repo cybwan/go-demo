@@ -8,8 +8,8 @@ export fsm_namespace=fsm-system
 export fsm_mesh_name=fsm
 export dns_svc_ip="$(kubectl get svc -n kube-system -l k8s-app=kube-dns -o jsonpath='{.items[0].spec.clusterIP}')"
 echo $dns_svc_ip
-export nacos_svc_addr="$(kubectl get svc -n default --field-selector metadata.name=nacos -o jsonpath='{.items[0].spec.clusterIP}')"
-echo $nacos_svc_addr
+export consul_svc_addr="$(kubectl get svc -n default --field-selector metadata.name=consul -o jsonpath='{.items[0].spec.clusterIP}')"
+echo $consul_svc_addr
 
 fsm install \
     --mesh-name "$fsm_mesh_name" \
@@ -36,15 +36,15 @@ fsm install \
     --set fsm.featureFlags.enableValidateTLSRouteHostnames=false \
     --set fsm.featureFlags.enableValidateGatewayListenerHostname=false \
     --set fsm.featureFlags.enableGatewayProxyTag=true \
-    --set=fsm.cloudConnector.nacos.enable=true \
-    --set=fsm.cloudConnector.nacos.deriveNamespace=derive-nacos \
-    --set=fsm.cloudConnector.nacos.httpAddr=$nacos_svc_addr:8848 \
-    --set=fsm.cloudConnector.nacos.syncToK8S.enable=true \
-    --set=fsm.cloudConnector.nacos.syncToK8S.suffixMetadata=version \
-    --set=fsm.cloudConnector.nacos.syncToK8S.withGateway.enable=false \
-    --set=fsm.cloudConnector.nacos.syncFromK8S.enable=true \
-    --set "fsm.cloudConnector.nacos.syncFromK8S.denyK8sNamespaces={default,kube-system,fsm-system}" \
-    --set=fsm.cloudConnector.nacos.syncFromK8S.withGateway.enable=false \
+    --set=fsm.cloudConnector.consul.enable=true \
+    --set=fsm.cloudConnector.consul.deriveNamespace=derive-consul \
+    --set=fsm.cloudConnector.consul.httpAddr=$consul_svc_addr:8500 \
+    --set=fsm.cloudConnector.consul.syncToK8S.enable=true \
+    --set=fsm.cloudConnector.consul.syncToK8S.suffixTag=version \
+    --set=fsm.cloudConnector.consul.syncToK8S.withGateway.enable=false \
+    --set=fsm.cloudConnector.consul.syncFromK8S.enable=true \
+    --set "fsm.cloudConnector.consul.syncFromK8S.denyK8sNamespaces={default,kube-system,fsm-system}" \
+    --set=fsm.cloudConnector.consul.syncFromK8S.withGateway.enable=false \
     --set=fsm.cloudConnector.machine.enable=false \
     --set=fsm.cloudConnector.machine.asInternalServices=false \
     --set=fsm.cloudConnector.machine.deriveNamespace=derive-vm \
@@ -60,9 +60,9 @@ fsm install \
     --set "fsm.cloudConnector.gateway.syncToFgw.denyK8sNamespaces={default,kube-system,fsm-system}" \
     --timeout=900s
 
-kubectl create namespace derive-nacos
-fsm namespace add derive-nacos
-kubectl patch namespace derive-nacos -p '{"metadata":{"annotations":{"flomesh.io/mesh-service-sync":"nacos"}}}'  --type=merge
+kubectl create namespace derive-consul
+fsm namespace add derive-consul
+kubectl patch namespace derive-consul -p '{"metadata":{"annotations":{"flomesh.io/mesh-service-sync":"consul"}}}'  --type=merge
 
 kubectl create namespace derive-vm
 fsm namespace add derive-vm
