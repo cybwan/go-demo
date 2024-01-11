@@ -215,6 +215,11 @@ bookbuyer-port-forward:
 	export POD=$$(kubectl get pods --selector app=bookbuyer -n bookbuyer --no-headers | grep 'Running' | awk 'NR==1{print $$1}');\
 	kubectl port-forward "$$POD" -n bookbuyer 14001:14001 --address 0.0.0.0 &
 
+.PHONY: bookbuyer-logs
+bookbuyer-logs:
+	export POD=$$(kubectl get pods --selector app=bookbuyer -n bookbuyer --no-headers | grep 'Running' | awk 'NR==1{print $$1}');\
+	kubectl logs "$$POD" -n bookbuyer -c bookbuyer -f
+
 .PHONY: to-consul
 to-consul:
 	cd cmd/to-consul;go run .

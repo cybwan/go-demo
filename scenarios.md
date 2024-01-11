@@ -14,16 +14,26 @@ nacos 下部署 bookbuyer 服务
 
 ```bash
 make consul-deploy
-make consul-port-forward
 make eureka-deploy
-make eureka-port-forward
 make nacos-deploy
-make nacos-port-forward
 
+make consul-port-forward
+http://127.0.0.1:8500
+
+make eureka-port-forward
+http://127.0.0.1:8761
+
+make nacos-port-forward
+http://127.0.0.1:8848/nacos
+
+#make deploy-bookwarehouse
 make deploy-consul-bookwarehouse
 make deploy-eureka-bookstore
 make deploy-nacos-bookbuyer
 
 make deploy-fsm
+
+make bookbuyer-port-forward
+http://127.0.0.1:14001
 ```
 

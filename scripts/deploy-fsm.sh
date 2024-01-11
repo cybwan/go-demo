@@ -47,7 +47,7 @@ fsm install \
     --set=fsm.cloudConnector.consul.syncToK8S.suffixTag=version \
     --set=fsm.cloudConnector.consul.syncToK8S.withGateway.enable=false \
     --set=fsm.cloudConnector.consul.syncFromK8S.enable=true \
-    --set "fsm.cloudConnector.consul.syncFromK8S.allowK8sNamespaces={derive-eureka,derive-nacos}" \
+    --set "fsm.cloudConnector.consul.syncFromK8S.allowK8sNamespaces={derive-eureka,derive-nacos,bookwarehouse}" \
     --set=fsm.cloudConnector.consul.syncFromK8S.withGateway.enable=false \
     --set=fsm.cloudConnector.eureka.enable=true \
     --set=fsm.cloudConnector.eureka.deriveNamespace=derive-eureka \
@@ -56,7 +56,7 @@ fsm install \
     --set=fsm.cloudConnector.eureka.syncToK8S.suffixMetadata=version \
     --set=fsm.cloudConnector.eureka.syncToK8S.withGateway.enable=false \
     --set=fsm.cloudConnector.eureka.syncFromK8S.enable=true \
-    --set "fsm.cloudConnector.eureka.syncFromK8S.allowK8sNamespaces={derive-consul,derive-nacos}" \
+    --set "fsm.cloudConnector.eureka.syncFromK8S.allowK8sNamespaces={derive-consul,derive-nacos,bookwarehouse}" \
     --set=fsm.cloudConnector.eureka.syncFromK8S.withGateway.enable=false \
     --set=fsm.cloudConnector.nacos.enable=true \
     --set=fsm.cloudConnector.nacos.deriveNamespace=derive-nacos \
@@ -65,7 +65,7 @@ fsm install \
     --set=fsm.cloudConnector.nacos.syncToK8S.suffixMetadata=version \
     --set=fsm.cloudConnector.nacos.syncToK8S.withGateway.enable=false \
     --set=fsm.cloudConnector.nacos.syncFromK8S.enable=true \
-    --set "fsm.cloudConnector.nacos.syncFromK8S.allowK8sNamespaces={derive-consul,derive-eureka}" \
+    --set "fsm.cloudConnector.nacos.syncFromK8S.allowK8sNamespaces={derive-consul,derive-eureka,bookwarehouse}" \
     --set=fsm.cloudConnector.nacos.syncFromK8S.withGateway.enable=false \
     --set=fsm.cloudConnector.machine.enable=false \
     --set=fsm.cloudConnector.machine.asInternalServices=false \
