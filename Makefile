@@ -40,6 +40,19 @@ undeploy-curl:
 	kubectl delete deployments.apps -n curl curl --ignore-not-found
 	kubectl delete namespace curl --ignore-not-found
 
+.PHONY: deploy-httpbin
+deploy-httpbin: undeploy-httpbin
+	kubectl create namespace httpbin
+	fsm namespace add httpbin
+	kubectl apply -n httpbin -f ./manifests/httpbin.yaml
+	sleep 2
+	kubectl wait --all --for=condition=ready pod -n httpbin -l app=httpbin --timeout=180s
+
+.PHONY: undeploy-httpbin
+undeploy-httpbin:
+	kubectl delete deployments.apps -n httpbin httpbin --ignore-not-found
+	kubectl delete namespace httpbin --ignore-not-found
+
 .PHONY: deploy-bookwarehouse
 deploy-bookwarehouse: undeploy-bookwarehouse
 	kubectl delete namespace bookwarehouse --ignore-not-found
@@ -52,6 +65,20 @@ deploy-bookwarehouse: undeploy-bookwarehouse
 .PHONY: undeploy-bookwarehouse
 undeploy-bookwarehouse:
 	kubectl delete -n bookwarehouse -f ./manifests/bookwarehouse.yaml --ignore-not-found
+
+.PHONY: deploy-fsm-bookwarehouse
+deploy-fsm-bookwarehouse: undeploy-fsm-bookwarehouse
+	kubectl delete namespace bookwarehouse --ignore-not-found
+	kubectl create namespace bookwarehouse
+	fsm namespace add bookwarehouse
+	kubectl apply -n bookwarehouse -f ./manifests/bookwarehouse.yaml
+	sleep 2
+	kubectl wait --all --for=condition=ready pod -n bookwarehouse -l app=bookwarehouse --timeout=180s
+
+.PHONY: undeploy-fsm-bookwarehouse
+undeploy-fsm-bookwarehouse:
+	kubectl delete -n bookwarehouse -f ./manifests/bookwarehouse.yaml --ignore-not-found
+	fsm namespace remove bookwarehouse || true
 
 .PHONY: deploy-consul-bookwarehouse
 deploy-consul-bookwarehouse: undeploy-consul-bookwarehouse
@@ -256,10 +283,22 @@ deploy-fsm-consul:
 deploy-fsm:
 	scripts/deploy-fsm.sh
 
+.PHONY: deploy-fsm-min
+deploy-fsm-min:
+	scripts/deploy-fsm-min.sh
+
 .PHONY: undeploy-fsm
 undeploy-fsm:
-	fsm uninstall mesh --delete-cluster-wide-resources || true
+	fsm uninstall mesh --delete-cluster-wide-resources --delete-namespace|| true
 	kubectl delete namespace derive-vm || true
+	kubectl delete namespace derive-vm1 || true
+	kubectl delete namespace derive-vm2 || true
 	kubectl delete namespace derive-eureka || true
+	kubectl delete namespace derive-eureka1 || true
+	kubectl delete namespace derive-eureka2 || true
 	kubectl delete namespace derive-consul || true
+	kubectl delete namespace derive-consul1 || true
+	kubectl delete namespace derive-consul2 || true
 	kubectl delete namespace derive-nacos || true
+	kubectl delete namespace derive-nacos1 || true
+	kubectl delete namespace derive-nacos2 || true

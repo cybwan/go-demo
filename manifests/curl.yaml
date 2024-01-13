@@ -14,7 +14,6 @@ spec:
   ports:
     - name: http
       port: 80
-      appProtocol: HTTP
   selector:
     app: curl
 ---
@@ -36,7 +35,7 @@ spec:
       nodeSelector:
         kubernetes.io/os: linux
       containers:
-        - image: localhost:5000/cybwan/curl
-          imagePullPolicy: IfNotPresent
-          name: curl
-          command: ["sleep", "365d"]
+      - image: cybwan/curl
+        imagePullPolicy: IfNotPresent
+        name: curl
+        command: ["sleep", "365d"]
