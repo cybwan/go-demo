@@ -1,0 +1,32 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: bookstore-v2
+  labels:
+    version: v2
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: bookstore
+      version: v2
+  template:
+    metadata:
+      labels:
+        app: bookstore
+        version: v2
+    spec:
+      containers:
+        - name: bookstore
+          image: addozhang/bookstore-dubbo:0.3
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 20880
+          env:
+            - name: SPRING_PROFILES_ACTIVE
+              value: 'dubbo,prod'
+            - name: IDENTITY
+              value: bookstore-v2
+#            - name: DUBBO_REGISTRY_ADDRESS
+#              value: 'zookeeper.default'

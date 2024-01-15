@@ -27,6 +27,15 @@ nacos-deploy:
 nacos-reboot:
 	kubectl rollout restart deployment -n default nacos
 
+.PHONY: zookeeper-deploy
+zookeeper-deploy:
+	kubectl apply -n default -f ./manifests/zookeeper.yaml
+	kubectl wait --all --for=condition=ready pod -n default -l app=zookeeper --timeout=180s
+
+.PHONY: zookeeper-reboot
+zookeeper-reboot:
+	kubectl rollout restart deployment -n default zookeeper
+
 .PHONY: deploy-curl
 deploy-curl: undeploy-curl
 	kubectl create namespace curl
@@ -167,7 +176,6 @@ deploy-eureka-bookthief: undeploy-eureka-bookthief
 undeploy-eureka-bookthief:
 	kubectl delete -n bookthief -f ./manifests/eureka/bookthief.yaml --ignore-not-found
 
-
 .PHONY: deploy-nacos-bookwarehouse
 deploy-nacos-bookwarehouse: undeploy-nacos-bookwarehouse
 	kubectl delete namespace bookwarehouse --ignore-not-found
@@ -216,11 +224,65 @@ deploy-nacos-bookthief: undeploy-nacos-bookthief
 undeploy-nacos-bookthief:
 	kubectl delete -n bookthief -f ./manifests/nacos/bookthief.yaml --ignore-not-found
 
+.PHONY: deploy-dubbo-bookwarehouse
+deploy-dubbo-bookwarehouse: undeploy-dubbo-bookwarehouse
+	kubectl delete namespace bookwarehouse --ignore-not-found
+	kubectl create namespace bookwarehouse
+	kubectl apply -n bookwarehouse -f ./manifests/dubbo/bookwarehouse.yaml
+	sleep 2
+	kubectl wait --all --for=condition=ready pod -n bookwarehouse -l app=bookwarehouse --timeout=180s
+
+.PHONY: undeploy-dubbo-bookwarehouse
+undeploy-dubbo-bookwarehouse:
+	kubectl delete -n bookwarehouse -f ./manifests/dubbo/bookwarehouse.yaml --ignore-not-found
+
+.PHONY: deploy-dubbo-bookstore
+deploy-dubbo-bookstore: undeploy-dubbo-bookstore
+	kubectl delete namespace bookstore --ignore-not-found
+	kubectl create namespace bookstore
+	kubectl apply -n bookstore -f ./manifests/dubbo/bookstore.yaml
+	sleep 2
+	kubectl wait --all --for=condition=ready pod -n bookstore -l app=bookstore --timeout=180s
+
+.PHONY: undeploy-dubbo-bookstore
+undeploy-dubbo-bookstore:
+	kubectl delete -n bookstore -f ./manifests/dubbo/bookstore.yaml --ignore-not-found
+
+.PHONY: deploy-dubbo-bookbuyer
+deploy-dubbo-bookbuyer: undeploy-dubbo-bookbuyer
+	kubectl delete namespace bookbuyer --ignore-not-found
+	kubectl create namespace bookbuyer
+	kubectl apply -n bookbuyer -f ./manifests/dubbo/bookbuyer.yaml
+	sleep 2
+	kubectl wait --all --for=condition=ready pod -n bookbuyer -l app=bookbuyer --timeout=180s
+
+.PHONY: undeploy-dubbo-bookbuyer
+undeploy-dubbo-bookbuyer:
+	kubectl delete -n bookbuyer -f ./manifests/dubbo/bookbuyer.yaml --ignore-not-found
+
+.PHONY: deploy-dubbo-bookthief
+deploy-dubbo-bookthief: undeploy-dubbo-bookthief
+	kubectl delete namespace bookthief --ignore-not-found
+	kubectl create namespace bookthief
+	kubectl apply -n bookthief -f ./manifests/dubbo/bookthief.yaml
+	sleep 2
+	kubectl wait --all --for=condition=ready pod -n bookthief -l app=bookthief --timeout=180s
+
+.PHONY: undeploy-dubbo-bookthief
+undeploy-dubbo-bookthief:
+	kubectl delete -n bookthief -f ./manifests/dubbo/bookthief.yaml --ignore-not-found
+
 .PHONY: deploy-nacos
 deploy-nacos: deploy-nacos-bookwarehouse deploy-nacos-bookstore deploy-nacos-bookbuyer
 
 .PHONY: undeploy-nacos
 undeploy-nacos: undeploy-nacos-bookbuyer undeploy-nacos-bookstore undeploy-nacos-bookwarehouse
+
+.PHONY: deploy-dubbo
+deploy-dubbo: deploy-dubbo-bookwarehouse deploy-dubbo-bookstore deploy-dubbo-bookbuyer
+
+.PHONY: undeploy-dubbo
+undeploy-dubbo: undeploy-dubbo-bookbuyer undeploy-dubbo-bookstore undeploy-dubbo-bookwarehouse
 
 .PHONY: consul-port-forward
 consul-port-forward:
@@ -236,6 +298,16 @@ eureka-port-forward:
 nacos-port-forward:
 	export POD=$$(kubectl get pods --selector app=nacos -n default --no-headers | grep 'Running' | awk 'NR==1{print $$1}');\
 	kubectl port-forward "$$POD" -n default 8848:8848 --address 0.0.0.0 &
+
+.PHONY: zookeeper-port-forward
+zookeeper-port-forward:
+	export POD=$$(kubectl get pods --selector app=zookeeper -n default --no-headers | grep 'Running' | awk 'NR==1{print $$1}');\
+	kubectl port-forward "$$POD" -n default 2181:2181 --address 0.0.0.0 &
+
+.PHONY: zookeeper-ui-port-forward
+zookeeper-ui-port-forward:
+	export POD=$$(kubectl get pods --selector app=zookeeper -n default --no-headers | grep 'Running' | awk 'NR==1{print $$1}');\
+	kubectl port-forward "$$POD" -n default 8080:8081 --address 0.0.0.0 &
 
 .PHONY: bookbuyer-port-forward
 bookbuyer-port-forward:

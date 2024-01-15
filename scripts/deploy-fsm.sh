@@ -48,6 +48,8 @@ fsm install \
     --set=fsm.cloudConnector.consul.syncToK8S.suffixTag=version \
     --set=fsm.cloudConnector.consul.syncToK8S.withGateway.enable=true \
     --set=fsm.cloudConnector.consul.syncFromK8S.enable=true \
+    --set fsm.cloudConnector.consul.syncFromK8S.appendTag[0]=tag0 \
+    --set fsm.cloudConnector.consul.syncFromK8S.appendTag[1]=tag1 \
     --set "fsm.cloudConnector.consul.syncFromK8S.allowK8sNamespaces={derive-eureka,derive-nacos,bookwarehouse}" \
     --set=fsm.cloudConnector.consul.syncFromK8S.withGateway.enable=true \
     --set=fsm.cloudConnector.eureka.enable=true \
@@ -58,6 +60,12 @@ fsm install \
     --set=fsm.cloudConnector.eureka.syncToK8S.suffixMetadata=version \
     --set=fsm.cloudConnector.eureka.syncToK8S.withGateway.enable=true \
     --set=fsm.cloudConnector.eureka.syncFromK8S.enable=true \
+    --set fsm.cloudConnector.eureka.syncFromK8S.appendMetadata[0].key=type \
+    --set fsm.cloudConnector.eureka.syncFromK8S.appendMetadata[0].value=smart-gateway \
+    --set fsm.cloudConnector.eureka.syncFromK8S.appendMetadata[1].key=version \
+    --set fsm.cloudConnector.eureka.syncFromK8S.appendMetadata[1].value=release \
+    --set fsm.cloudConnector.eureka.syncFromK8S.appendMetadata[2].key=zone \
+    --set fsm.cloudConnector.eureka.syncFromK8S.appendMetadata[2].value=yinzhou \
     --set "fsm.cloudConnector.eureka.syncFromK8S.allowK8sNamespaces={derive-consul,derive-nacos,bookwarehouse}" \
     --set=fsm.cloudConnector.eureka.syncFromK8S.withGateway.enable=true \
     --set=fsm.cloudConnector.nacos.enable=true \

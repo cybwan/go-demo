@@ -21,14 +21,19 @@ make metallb-up
 make consul-deploy
 make eureka-deploy
 make nacos-deploy
+#make zookeeper-deploy
 
 make consul-port-forward
 make eureka-port-forward
 make nacos-port-forward
+#make zookeeper-port-forward
+#make zookeeper-ui-port-forward
 
 http://127.0.0.1:8500
 http://127.0.0.1:8761
 http://127.0.0.1:8848/nacos
+#http://127.0.0.1:2181
+#http://127.0.0.1:8080
 
 make deploy-consul-bookwarehouse
 make deploy-eureka-bookstore
