@@ -122,16 +122,16 @@ spec:
   listeners:
     - protocol: HTTP
       port: 10080
-      name: ingress-http-proxy
+      name: igrs-http
     - protocol: HTTP
       port: 10090
-      name: egress-http-proxy
-    - protocol: HTTP
+      name: egrs-http
+    - protocol: GRPC
       port: 10180
-      name: ingress-grpc-proxy
-    - protocol: HTTP
+      name: igrs-grpc
+    - protocol: GRPC
       port: 10190
-      name: egress-grpc-proxy
+      name: egrs-grpc
 EOF
 
 kubectl apply -n derive-vm1 -f - <<EOF
