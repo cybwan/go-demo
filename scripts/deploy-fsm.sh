@@ -33,7 +33,7 @@ fsm install \
     --set fsm.fsmIngress.enabled=false \
     --set fsm.fsmGateway.enabled=true \
     --set=fsm.localDNSProxy.enable=true \
-    --set=fsm.localDNSProxy.wildcard.enable=true \
+    --set=fsm.localDNSProxy.wildcard.enable=false \
     --set=fsm.localDNSProxy.primaryUpstreamDNSServerIPAddr=$dns_svc_ip \
     --set fsm.featureFlags.enableValidateHTTPRouteHostnames=false \
     --set fsm.featureFlags.enableValidateGRPCRouteHostnames=false \
@@ -126,10 +126,10 @@ spec:
     - protocol: HTTP
       port: 10090
       name: egrs-http
-    - protocol: GRPC
+    - protocol: HTTP
       port: 10180
       name: igrs-grpc
-    - protocol: GRPC
+    - protocol: HTTP
       port: 10190
       name: egrs-grpc
 EOF

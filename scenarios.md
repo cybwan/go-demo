@@ -35,11 +35,11 @@ http://127.0.0.1:8848/nacos
 #http://127.0.0.1:2181
 #http://127.0.0.1:8080
 
-make deploy-consul-bookwarehouse
 make deploy-eureka-bookstore
 make deploy-nacos-bookbuyer
 
 make deploy-fsm
+make deploy-consul-bookwarehouse
 make deploy-httpbin
 
 make port-forward-fsm-repo
@@ -47,4 +47,15 @@ http://127.0.0.1:6060
 
 make bookbuyer-port-forward
 http://127.0.0.1:14001
+
+kubectl apply -n derive-consul -f - <<EOF
+kind: AccessControl
+apiVersion: policy.flomesh.io/v1alpha1
+metadata:
+  name: consul
+spec:
+  sources:
+  - kind: IPRange
+    name: 10.244.2.2/32
+EOF
 ```

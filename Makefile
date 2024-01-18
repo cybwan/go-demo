@@ -93,6 +93,7 @@ undeploy-fsm-bookwarehouse:
 deploy-consul-bookwarehouse: undeploy-consul-bookwarehouse
 	kubectl delete namespace bookwarehouse --ignore-not-found
 	kubectl create namespace bookwarehouse
+	fsm namespace add bookwarehouse
 	kubectl apply -n bookwarehouse -f ./manifests/consul/bookwarehouse-consul.yaml
 	sleep 2
 	kubectl wait --all --for=condition=ready pod -n bookwarehouse -l app=bookwarehouse --timeout=180s
