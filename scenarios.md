@@ -43,6 +43,7 @@ make deploy-consul-bookwarehouse
 make deploy-httpbin
 make deploy-bookwarehouse
 make deploy-bookwarehouse-3k
+make undeploy-bookwarehouse-3k
 
 make port-forward-fsm-repo
 http://127.0.0.1:6060
