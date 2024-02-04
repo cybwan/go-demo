@@ -62,6 +62,10 @@ undeploy-httpbin:
 	kubectl delete deployments.apps -n httpbin httpbin --ignore-not-found
 	kubectl delete namespace httpbin --ignore-not-found
 
+.PHONY: deploy-bookwarehouse-3k
+deploy-bookwarehouse-3k:
+	scripts/deploy-bookwarehouse-3k.sh
+
 .PHONY: deploy-bookwarehouse
 deploy-bookwarehouse: undeploy-bookwarehouse
 	kubectl delete namespace bookwarehouse --ignore-not-found

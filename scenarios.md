@@ -41,6 +41,8 @@ make deploy-nacos-bookbuyer
 make deploy-fsm
 make deploy-consul-bookwarehouse
 make deploy-httpbin
+make deploy-bookwarehouse
+make deploy-bookwarehouse-3k
 
 make port-forward-fsm-repo
 http://127.0.0.1:6060
@@ -56,6 +58,9 @@ metadata:
 spec:
   sources:
   - kind: IPRange
-    name: 10.244.2.2/32
+    name: 10.244.1.2/32
 EOF
 ```
+
+
+
