@@ -364,6 +364,10 @@ deploy-fsm-consul:
 deploy-fsm:
 	scripts/deploy-fsm.sh
 
+.PHONY: deploy-fsm.consul
+deploy-fsm.consul:
+	scripts/deploy-fsm.consul.sh
+
 .PHONY: deploy-fsm-min
 deploy-fsm-min:
 	scripts/deploy-fsm-min.sh

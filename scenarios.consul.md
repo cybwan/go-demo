@@ -19,39 +19,15 @@ make kind-up
 make metallb-up
 
 make consul-deploy
-make eureka-deploy
-make nacos-deploy
-#make zookeeper-deploy
 
 make consul-port-forward
-make eureka-port-forward
-make nacos-port-forward
-#make zookeeper-port-forward
-#make zookeeper-ui-port-forward
 
 http://127.0.0.1:8500
-http://127.0.0.1:8761
-http://127.0.0.1:8848/nacos
-#http://127.0.0.1:2181
-#http://127.0.0.1:8080
 
-make deploy-eureka-bookstore
-make deploy-nacos-bookbuyer
-
-make deploy-fsm
-
-make deploy-consul-bookwarehouse
-make deploy-httpbin
-
-make deploy-bookwarehouse
-make deploy-bookwarehouse-3k
-make undeploy-bookwarehouse-3k
+make deploy-fsm.consul
 
 make port-forward-fsm-repo
 http://127.0.0.1:6060
-
-make bookbuyer-port-forward
-http://127.0.0.1:14001
 
 kubectl apply -n derive-consul -f - <<EOF
 kind: AccessControl
@@ -63,6 +39,10 @@ spec:
   - kind: IPRange
     name: 10.244.1.2/32
 EOF
+
+make deploy-bookwarehouse
+make deploy-bookwarehouse-3k
+make undeploy-bookwarehouse-3k
 ```
 
 
