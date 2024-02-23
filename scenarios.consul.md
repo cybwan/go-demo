@@ -40,7 +40,14 @@ spec:
     name: 10.244.1.2/32
 EOF
 
+make deploy-httpbin
+
 make deploy-bookwarehouse
+
+fsm namespace add bookwarehouse
+kubectl rollout restart deployment -n bookwarehouse bookwarehouse
+
+export LOOPS=100
 make deploy-bookwarehouse-3k
 make undeploy-bookwarehouse-3k
 ```
