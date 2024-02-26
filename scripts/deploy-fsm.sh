@@ -40,6 +40,7 @@ fsm install \
     --set fsm.featureFlags.enableValidateTLSRouteHostnames=false \
     --set fsm.featureFlags.enableValidateGatewayListenerHostname=false \
     --set fsm.featureFlags.enableGatewayProxyTag=true \
+    --set=fsm.featureFlags.enableSidecarPrettyConfig=false \
     --set=fsm.cloudConnector.consul.enable=true \
     --set=fsm.cloudConnector.consul.deriveNamespace=derive-consul \
     --set=fsm.cloudConnector.consul.httpAddr=$consul_svc_addr:8500 \
