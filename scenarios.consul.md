@@ -44,12 +44,53 @@ make deploy-httpbin
 
 make deploy-bookwarehouse
 
-fsm namespace add bookwarehouse
+fsm namespace remove bookwarehouse
 kubectl rollout restart deployment -n bookwarehouse bookwarehouse
 
 export LOOPS=100
 make deploy-bookwarehouse-3k
 make undeploy-bookwarehouse-3k
+
+export fsm_namespace=fsm-system
+kubectl patch meshconfig fsm-mesh-config -n "$fsm_namespace" -p '{"spec":{"featureFlags":{"enableSidecarPrettyConfig":false}}}'  --type=merge
+
+--set=fsm.featureFlags.enableSidecarPrettyConfig=false
+
+export fsm_namespace=fsm-system
+kubectl patch meshconfig fsm-mesh-config -n "$fsm_namespace" -p '{"spec":{"featureFlags":{"enableSidecarPrettyConfig":true}}}'  --type=merge
+
+
+kubectl apply  -f - <<EOF
+kind: ConsulConnector
+apiVersion: connector.flomesh.io/v1alpha1
+metadata:
+  name: cluster1
+spec:
+  machineIP: 192.168.127.11
+EOF
+
+
+kubectl apply  -f - <<EOF
+kind: ConsulConnector
+apiVersion: connector.flomesh.io/v1alpha1
+metadata:
+  name: cluster2
+spec:
+  machineIP: 192.168.127.11
+EOF
+
+kubectl apply  -f - <<EOF
+kind: ConsulConnector
+apiVersion: connector.flomesh.io/v1alpha1
+metadata:
+  name: vm3
+spec:
+  machineIP: 192.168.127.11
+EOF
+
+kubectl create namespace derive-consul
+fsm namespace add derive-consul
+kubectl patch namespace derive-consul -p '{"metadata":{"annotations":{"flomesh.io/mesh-service-sync":"consul"}}}'  --type=merge
 ```
 
 

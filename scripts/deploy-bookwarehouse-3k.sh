@@ -10,7 +10,7 @@ number=0
 while [ "$number" -lt $LOOPS ]; do
 number=$((number + 1))
 padded_number=$(printf "%04d" $number)
-echo "Number = $padded_number"
+#echo "Number = $padded_number"
 kubectl apply -n bookwarehouse -f - <<EOF
 apiVersion: v1
 kind: Service
