@@ -94,7 +94,7 @@ spec:
       - tag0
       - tag1
     allowK8sNamespaces:
-      - *
+      - '*'
     denyK8sNamespaces:
       - default
       - kube-system
