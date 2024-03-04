@@ -190,7 +190,7 @@ kubectl apply  -f - <<EOF
 kind: MachineConnector
 apiVersion: connector.flomesh.io/v1alpha1
 metadata:
-  name: vm-1
+  name: vm-cluster-1
 spec:
   deriveNamespace: derive-vm1
   syncToK8S:
@@ -203,7 +203,7 @@ kubectl apply  -f - <<EOF
 kind: MachineConnector
 apiVersion: connector.flomesh.io/v1alpha1
 metadata:
-  name: vm-2
+  name: vm-cluster-2
 spec:
   deriveNamespace: derive-vm2
   syncToK8S:
