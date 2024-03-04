@@ -41,59 +41,6 @@ fsm install \
     --set fsm.featureFlags.enableValidateGatewayListenerHostname=false \
     --set fsm.featureFlags.enableGatewayProxyTag=true \
     --set=fsm.featureFlags.enableSidecarPrettyConfig=false \
-    --set=fsm.cloudConnector.consul.enable=true \
-    --set=fsm.cloudConnector.consul.deriveNamespace=derive-consul \
-    --set=fsm.cloudConnector.consul.httpAddr=$consul_svc_addr:8500 \
-    --set=fsm.cloudConnector.consul.syncToK8S.enable=true \
-    --set=fsm.cloudConnector.consul.syncToK8S.clusterId=consul_cluster_1 \
-    --set=fsm.cloudConnector.consul.syncToK8S.suffixTag=version \
-    --set=fsm.cloudConnector.consul.syncToK8S.withGateway.enable=true \
-    --set=fsm.cloudConnector.consul.syncFromK8S.enable=true \
-    --set fsm.cloudConnector.consul.syncFromK8S.appendTag[0]=tag0 \
-    --set fsm.cloudConnector.consul.syncFromK8S.appendTag[1]=tag1 \
-    --set "fsm.cloudConnector.consul.syncFromK8S.allowK8sNamespaces={derive-eureka,derive-nacos,bookwarehouse}" \
-    --set=fsm.cloudConnector.consul.syncFromK8S.withGateway.enable=true \
-    --set=fsm.cloudConnector.eureka.enable=true \
-    --set=fsm.cloudConnector.eureka.deriveNamespace=derive-eureka \
-    --set=fsm.cloudConnector.eureka.httpAddr=http://$eureka_svc_addr:8761/eureka \
-    --set=fsm.cloudConnector.eureka.syncToK8S.enable=true \
-    --set=fsm.cloudConnector.eureka.syncToK8S.clusterId=eureka_cluster_1 \
-    --set=fsm.cloudConnector.eureka.syncToK8S.suffixMetadata=version \
-    --set=fsm.cloudConnector.eureka.syncToK8S.withGateway.enable=true \
-    --set=fsm.cloudConnector.eureka.syncFromK8S.enable=true \
-    --set fsm.cloudConnector.eureka.syncFromK8S.appendMetadata[0].key=type \
-    --set fsm.cloudConnector.eureka.syncFromK8S.appendMetadata[0].value=smart-gateway \
-    --set fsm.cloudConnector.eureka.syncFromK8S.appendMetadata[1].key=version \
-    --set fsm.cloudConnector.eureka.syncFromK8S.appendMetadata[1].value=release \
-    --set fsm.cloudConnector.eureka.syncFromK8S.appendMetadata[2].key=zone \
-    --set fsm.cloudConnector.eureka.syncFromK8S.appendMetadata[2].value=yinzhou \
-    --set "fsm.cloudConnector.eureka.syncFromK8S.allowK8sNamespaces={derive-consul,derive-nacos,bookwarehouse}" \
-    --set=fsm.cloudConnector.eureka.syncFromK8S.withGateway.enable=true \
-    --set=fsm.cloudConnector.nacos.enable=true \
-    --set=fsm.cloudConnector.nacos.deriveNamespace=derive-nacos \
-    --set=fsm.cloudConnector.nacos.httpAddr=$nacos_svc_addr:8848 \
-    --set=fsm.cloudConnector.nacos.syncToK8S.enable=true \
-    --set=fsm.cloudConnector.nacos.syncToK8S.clusterId=nacos_cluster_1 \
-    --set=fsm.cloudConnector.nacos.syncToK8S.suffixMetadata=version \
-    --set=fsm.cloudConnector.nacos.syncToK8S.withGateway.enable=true \
-    --set=fsm.cloudConnector.nacos.syncFromK8S.enable=true \
-    --set "fsm.cloudConnector.nacos.syncFromK8S.allowK8sNamespaces={derive-consul,derive-eureka,bookwarehouse}" \
-    --set=fsm.cloudConnector.nacos.syncFromK8S.withGateway.enable=true \
-    --set=fsm.cloudConnector.machine.enable=true \
-    --set=fsm.cloudConnector.machine.connectorNameSuffix=vm-cluster1 \
-    --set=fsm.cloudConnector.machine.asInternalServices=false \
-    --set=fsm.cloudConnector.machine.deriveNamespace=derive-vm1 \
-    --set=fsm.cloudConnector.machine.syncToK8S.enable=true \
-    --set=fsm.cloudConnector.machine.syncToK8S.clusterId=vm_cluster_1 \
-    --set=fsm.cloudConnector.machine.syncToK8S.withGateway.enable=true \
-    --set=fsm.cloudConnector.gateway.ingress.ipSelector=ExternalIP \
-    --set=fsm.cloudConnector.gateway.ingress.httpPort=10080 \
-    --set=fsm.cloudConnector.gateway.ingress.grpcPort=10180 \
-    --set=fsm.cloudConnector.gateway.egress.ipSelector=ClusterIP \
-    --set=fsm.cloudConnector.gateway.egress.httpPort=10090 \
-    --set=fsm.cloudConnector.gateway.egress.grpcPort=10190 \
-    --set=fsm.cloudConnector.gateway.syncToFgw.enable=true \
-    --set "fsm.cloudConnector.gateway.syncToFgw.denyK8sNamespaces={default,kube-system,fsm-system}" \
     --timeout=900s
 
 kubectl create namespace derive-consul
@@ -111,6 +58,10 @@ kubectl patch namespace derive-nacos -p '{"metadata":{"annotations":{"flomesh.io
 kubectl create namespace derive-vm1
 fsm namespace add derive-vm1
 kubectl patch namespace derive-vm1 -p '{"metadata":{"annotations":{"flomesh.io/mesh-service-sync":"machine"}}}'  --type=merge
+
+kubectl create namespace derive-vm2
+fsm namespace add derive-vm2
+kubectl patch namespace derive-vm2 -p '{"metadata":{"annotations":{"flomesh.io/mesh-service-sync":"machine"}}}'  --type=merge
 
 export fsm_namespace=fsm-system
 kubectl apply -n "$fsm_namespace" -f - <<EOF
@@ -133,6 +84,132 @@ spec:
     - protocol: HTTP
       port: 10190
       name: egrs-grpc
+EOF
+
+kubectl apply  -f - <<EOF
+kind: GatewayConnector
+apiVersion: connector.flomesh.io/v1alpha1
+metadata:
+  name: fgw-1
+spec:
+  ingress:
+    ipSelector: ExternalIP
+    httpPort: 10080
+    grpcPort: 10180
+  egress:
+    ipSelector: ClusterIP
+    httpPort: 10090
+    grpcPort: 10190
+  syncToFgw:
+    enable: true
+    allowK8sNamespaces:
+      - default
+      - kube-system
+      - fsm-system
+EOF
+
+kubectl apply  -f - <<EOF
+kind: ConsulConnector
+apiVersion: connector.flomesh.io/v1alpha1
+metadata:
+  name: cluster-1
+spec:
+  httpAddr: $consul_svc_addr:8500
+  deriveNamespace: derive-consul
+  syncToK8S:
+    enable: true
+    clusterId: consul_cluster_1
+    suffixTag: version
+    withGateway: true
+  syncFromK8S:
+    enable: true
+    consulK8STag: k8s
+    consulNodeName: k8s-sync
+    appendTags:
+      - tag0
+      - tag1
+    allowK8sNamespaces:
+      - derive-eureka
+      - derive-nacos
+      - bookwarehouse
+    withGateway: true
+EOF
+
+kubectl apply  -f - <<EOF
+kind: EurekaConnector
+apiVersion: connector.flomesh.io/v1alpha1
+metadata:
+  name: cluster-2
+spec:
+  httpAddr: http://$eureka_svc_addr:8761/eureka
+  deriveNamespace: derive-eureka
+  syncToK8S:
+    enable: true
+    clusterId: eureka_cluster_1
+    suffixMetadata: version
+    withGateway: true
+  syncFromK8S:
+    enable: true
+    appendMetadatas:
+      - key: type
+        value: smart-gateway
+      - key: version
+        value: release
+      - key: zone
+        value: yinzhou
+    allowK8sNamespaces:
+      - derive-consul
+      - derive-nacos
+      - bookwarehouse
+    withGateway: true
+EOF
+
+kubectl apply  -f - <<EOF
+kind: NacosConnector
+apiVersion: connector.flomesh.io/v1alpha1
+metadata:
+  name: cluster-3
+spec:
+  httpAddr: $nacos_svc_addr:8848
+  deriveNamespace: derive-nacos
+  syncToK8S:
+    enable: true
+    clusterId: nacos_cluster_1
+    suffixMetadata: version
+    withGateway: true
+  syncFromK8S:
+    enable: true
+    allowK8sNamespaces:
+      - derive-consul
+      - derive-eureka
+      - bookwarehouse
+    withGateway: true
+EOF
+
+kubectl apply  -f - <<EOF
+kind: MachineConnector
+apiVersion: connector.flomesh.io/v1alpha1
+metadata:
+  name: vm-1
+spec:
+  deriveNamespace: derive-vm1
+  syncToK8S:
+    enable: true
+    clusterId: vm_cluster_1
+    withGateway: true
+EOF
+
+kubectl apply  -f - <<EOF
+kind: MachineConnector
+apiVersion: connector.flomesh.io/v1alpha1
+metadata:
+  name: vm-2
+spec:
+  deriveNamespace: derive-vm2
+  syncToK8S:
+    enable: true
+    clusterId: vm_cluster_2
+    withGateway: true
 EOF
 
 kubectl apply -n derive-vm1 -f - <<EOF
@@ -200,27 +277,6 @@ spec:
   serviceAccountName: vm14
   machineIP: 192.168.226.22
 EOF
-
-fsm connector enable \
-    --mesh-name "$fsm_mesh_name" \
-    --fsm-namespace "$fsm_namespace" \
-    --set=fsm.cloudConnector.machine.enable=true \
-    --set=fsm.cloudConnector.machine.connectorNameSuffix=vm-cluster2 \
-    --set=fsm.cloudConnector.machine.asInternalServices=false \
-    --set=fsm.cloudConnector.machine.deriveNamespace=derive-vm2 \
-    --set=fsm.cloudConnector.machine.syncToK8S.enable=true \
-    --set=fsm.cloudConnector.machine.syncToK8S.clusterId=vm_cluster_2 \
-    --set=fsm.cloudConnector.machine.syncToK8S.withGateway.enable=true \
-    --set=fsm.cloudConnector.gateway.ingress.ipSelector=ClusterIP \
-    --set=fsm.cloudConnector.gateway.ingress.httpPort=10080 \
-    --set=fsm.cloudConnector.gateway.ingress.grpcPort=10180 \
-    --set=fsm.cloudConnector.gateway.egress.ipSelector=ExternalIP \
-    --set=fsm.cloudConnector.gateway.egress.httpPort=10090 \
-    --set=fsm.cloudConnector.gateway.egress.grpcPort=10190
-
-kubectl create namespace derive-vm2
-fsm namespace add derive-vm2
-kubectl patch namespace derive-vm2 -p '{"metadata":{"annotations":{"flomesh.io/mesh-service-sync":"machine"}}}'  --type=merge
 
 kubectl apply -n derive-vm2 -f - <<EOF
 apiVersion: v1

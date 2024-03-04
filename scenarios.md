@@ -23,8 +23,10 @@ make deploy-fsm
 
 make deploy-bookwarehouse
 
+export LOOPS=100
 make deploy-bookwarehouse-3k
 
+export LOOPS=100
 make undeploy-bookwarehouse-3k
 ```
 

@@ -36,27 +36,7 @@ fsm install \
     --set fsm.featureFlags.enableValidateTLSRouteHostnames=false \
     --set fsm.featureFlags.enableValidateGatewayListenerHostname=false \
     --set fsm.featureFlags.enableGatewayProxyTag=true \
-    --set=fsm.featureFlags.enableSidecarPrettyConfig=false \
-    --set=fsm.cloudConnector.consul.enable=true \
-    --set=fsm.cloudConnector.consul.deriveNamespace=derive-consul \
-    --set=fsm.cloudConnector.consul.httpAddr=$consul_svc_addr:8500 \
-    --set=fsm.cloudConnector.consul.syncToK8S.enable=false \
-    --set=fsm.cloudConnector.consul.syncToK8S.clusterId=consul_cluster_1 \
-    --set=fsm.cloudConnector.consul.syncToK8S.suffixTag=version \
-    --set=fsm.cloudConnector.consul.syncToK8S.withGateway.enable=true \
-    --set=fsm.cloudConnector.consul.syncFromK8S.enable=true \
-    --set fsm.cloudConnector.consul.syncFromK8S.appendTag[0]=tag0 \
-    --set fsm.cloudConnector.consul.syncFromK8S.appendTag[1]=tag1 \
-    --set "fsm.cloudConnector.consul.syncFromK8S.allowK8sNamespaces={derive-eureka,derive-nacos,bookwarehouse}" \
-    --set=fsm.cloudConnector.consul.syncFromK8S.withGateway.enable=true \
-    --set=fsm.cloudConnector.gateway.ingress.ipSelector=ExternalIP \
-    --set=fsm.cloudConnector.gateway.ingress.httpPort=10080 \
-    --set=fsm.cloudConnector.gateway.ingress.grpcPort=10180 \
-    --set=fsm.cloudConnector.gateway.egress.ipSelector=ClusterIP \
-    --set=fsm.cloudConnector.gateway.egress.httpPort=10090 \
-    --set=fsm.cloudConnector.gateway.egress.grpcPort=10190 \
-    --set=fsm.cloudConnector.gateway.syncToFgw.enable=true \
-    --set "fsm.cloudConnector.gateway.syncToFgw.denyK8sNamespaces={default,kube-system,fsm-system}" \
+    --set=fsm.featureFlags.enableSidecarPrettyConfig=true \
     --timeout=900s
 
 kubectl create namespace derive-consul
@@ -84,4 +64,49 @@ spec:
     - protocol: HTTP
       port: 10190
       name: egrs-grpc
+EOF
+
+kubectl apply  -f - <<EOF
+kind: ConsulConnector
+apiVersion: connector.flomesh.io/v1alpha1
+metadata:
+  name: cluster-1
+spec:
+  httpAddr: $consul_svc_addr:8500
+  deriveNamespace: derive-consul
+  syncToK8S:
+    enable: true
+    clusterId: ''
+    passingOnly: true
+    filterTag: ''
+    prefixTag: ''
+    suffixTag: 'version'
+    withGateway: false
+  syncFromK8S:
+    enable: true
+    consulK8STag: k8s
+    consulNodeName: k8s-sync
+    defaultSync: true
+    addServicePrefix: ''
+    addK8SNamespaceAsServiceSuffix: false
+    appendTags:
+      - 'tag0'
+      - 'tag1'
+    allowK8sNamespaces:
+      - '*'
+    denyK8sNamespaces:
+      - 'default'
+      - 'kube-system'
+      - 'fsm-system'
+    syncClusterIPServices: true
+    syncIngress: false
+    syncIngressLoadBalancerIPs: false
+    syncLoadBalancerEndpoints: false
+    nodePortSyncType: ExternalOnly
+    consulCrossNamespaceACLPolicy: ''
+    consulDestinationNamespace: default
+    consulEnableK8SNSMirroring: false
+    consulEnableNamespaces: false
+    consulK8SNSMirroringPrefix: ''
+    withGateway: false
 EOF
