@@ -28,6 +28,15 @@ make deploy-bookwarehouse-3k
 
 export LOOPS=100
 make undeploy-bookwarehouse-3k
+
+
+make build-fsm-cli
+
+make rebuild-fsm-bootstrap restart-fsm-bootstrap
+
+make rebuild-fsm-connector restart-fsm-consul-connector
+
+make tail-fsm-consul-connector-logs
 ```
 
 
