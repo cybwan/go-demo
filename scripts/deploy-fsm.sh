@@ -8,12 +8,6 @@ export fsm_namespace=fsm-system
 export fsm_mesh_name=fsm
 export dns_svc_ip="$(kubectl get svc -n kube-system -l k8s-app=kube-dns -o jsonpath='{.items[0].spec.clusterIP}')"
 echo $dns_svc_ip
-export consul_svc_addr="$(kubectl get svc -n default --field-selector metadata.name=consul -o jsonpath='{.items[0].spec.clusterIP}')"
-echo $consul_svc_addr
-export eureka_svc_addr="$(kubectl get svc -n default --field-selector metadata.name=eureka -o jsonpath='{.items[0].spec.clusterIP}')"
-echo $eureka_svc_addr
-export nacos_svc_addr="$(kubectl get svc -n default --field-selector metadata.name=nacos -o jsonpath='{.items[0].spec.clusterIP}')"
-echo $nacos_svc_addr
 
 fsm install \
     --mesh-name "$fsm_mesh_name" \
@@ -108,6 +102,9 @@ spec:
       - fsm-system
 EOF
 
+export consul_svc_addr="$(kubectl get svc -n default --field-selector metadata.name=consul -o jsonpath='{.items[0].spec.clusterIP}')"
+echo $consul_svc_addr
+
 kubectl apply  -f - <<EOF
 kind: ConsulConnector
 apiVersion: connector.flomesh.io/v1alpha1
@@ -134,6 +131,9 @@ spec:
       - bookwarehouse
     withGateway: true
 EOF
+
+export eureka_svc_addr="$(kubectl get svc -n default --field-selector metadata.name=eureka -o jsonpath='{.items[0].spec.clusterIP}')"
+echo $eureka_svc_addr
 
 kubectl apply  -f - <<EOF
 kind: EurekaConnector
@@ -163,6 +163,9 @@ spec:
       - bookwarehouse
     withGateway: true
 EOF
+
+export nacos_svc_addr="$(kubectl get svc -n default --field-selector metadata.name=nacos -o jsonpath='{.items[0].spec.clusterIP}')"
+echo $nacos_svc_addr
 
 kubectl apply  -f - <<EOF
 kind: NacosConnector

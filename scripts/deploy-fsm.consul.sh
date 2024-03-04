@@ -8,8 +8,6 @@ export fsm_namespace=fsm-system
 export fsm_mesh_name=fsm
 export dns_svc_ip="$(kubectl get svc -n kube-system -l k8s-app=kube-dns -o jsonpath='{.items[0].spec.clusterIP}')"
 echo $dns_svc_ip
-export consul_svc_addr="$(kubectl get svc -n default --field-selector metadata.name=consul -o jsonpath='{.items[0].spec.clusterIP}')"
-echo $consul_svc_addr
 
 fsm install \
     --mesh-name "$fsm_mesh_name" \
@@ -66,6 +64,9 @@ spec:
       name: egrs-grpc
 EOF
 
+export consul_svc_addr="$(kubectl get svc -n default --field-selector metadata.name=consul -o jsonpath='{.items[0].spec.clusterIP}')"
+echo $consul_svc_addr
+
 kubectl apply  -f - <<EOF
 kind: ConsulConnector
 apiVersion: connector.flomesh.io/v1alpha1
@@ -80,7 +81,7 @@ spec:
     passingOnly: true
     filterTag: ''
     prefixTag: ''
-    suffixTag: 'version'
+    suffixTag: version
     withGateway: false
   syncFromK8S:
     enable: true
@@ -90,14 +91,14 @@ spec:
     addServicePrefix: ''
     addK8SNamespaceAsServiceSuffix: false
     appendTags:
-      - 'tag0'
-      - 'tag1'
+      - tag0
+      - tag1
     allowK8sNamespaces:
-      - '*'
+      - *
     denyK8sNamespaces:
-      - 'default'
-      - 'kube-system'
-      - 'fsm-system'
+      - default
+      - kube-system
+      - fsm-system
     syncClusterIPServices: true
     syncIngress: false
     syncIngressLoadBalancerIPs: false
