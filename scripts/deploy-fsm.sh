@@ -102,7 +102,7 @@ spec:
     grpcPort: 10190
   syncToFgw:
     enable: true
-    allowK8sNamespaces:
+    denyK8sNamespaces:
       - default
       - kube-system
       - fsm-system
