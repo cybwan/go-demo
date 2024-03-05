@@ -6,13 +6,13 @@
 make kind-up
 make metallb-up
 
-make consul-deploy
+make nacos-deploy
 
-make consul-port-forward
+make nacos-port-forward
 
-http://127.0.0.1:8500
+http://127.0.0.1:8848/nacos
 
-make deploy-fsm.consul
+make deploy-fsm.nacos
 
 make port-forward-fsm-repo
 http://127.0.0.1:6060
@@ -24,7 +24,7 @@ make deploy-bookwarehouse
 fsm namespace remove bookwarehouse
 kubectl rollout restart deployment -n bookwarehouse bookwarehouse
 
-export LOOPS=100
+export LOOPS=3000
 make deploy-bookwarehouse-3k
 make undeploy-bookwarehouse-3k
 
@@ -32,9 +32,6 @@ make build-fsm-cli
 
 make rebuild-fsm-bootstrap restart-fsm-bootstrap
 
-make rebuild-fsm-connector restart-fsm-consul-connector
-make tail-fsm-consul-connector-logs
-
-make rebuild-fsm-connector restart-fsm-eureka-connector
-make tail-fsm-eureka-connector-logs
+make rebuild-fsm-connector restart-fsm-nacos-connector
+make tail-fsm-nacos-connector-logs
 ```

@@ -368,6 +368,10 @@ deploy-fsm:
 deploy-fsm.consul:
 	scripts/deploy-fsm.consul.sh
 
+.PHONY: deploy-fsm.eureka
+deploy-fsm.eureka:
+	scripts/deploy-fsm.eureka.sh
+
 .PHONY: deploy-fsm-min
 deploy-fsm-min:
 	scripts/deploy-fsm-min.sh
