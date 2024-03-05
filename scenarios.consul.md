@@ -36,6 +36,3 @@ make rebuild-fsm-connector restart-fsm-consul-connector
 
 make tail-fsm-consul-connector-logs
 ```
-
-
-
