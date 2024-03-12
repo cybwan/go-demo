@@ -6,10 +6,10 @@ set -aueo pipefail
 
 LOOPS="${LOOPS:-3000}"
 
-number=0
-while [ "$number" -lt $LOOPS ]; do
-number=$((number + 1))
+number=$LOOPS
+while [ "$number" -gt 0 ]; do
 padded_number=$(printf "%04d" $number)
+number=$((number - 1))
 #echo "Number = $padded_number"
 kubectl apply -n bookwarehouse -f - <<EOF
 apiVersion: v1
