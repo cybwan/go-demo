@@ -85,7 +85,7 @@ spec:
     withGateway: false
   syncFromK8S:
     enable: true
-    consulNodeName: k8s-sync
+    consulNodeName: ''
     defaultSync: true
     addServicePrefix: ''
     addK8SNamespaceAsServiceSuffix: false

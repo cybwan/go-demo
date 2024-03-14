@@ -1,8 +1,10 @@
 #!make
 
+CONSUL_VERSION      ?= 1.5.3
+
 .PHONY: consul-deploy
 consul-deploy:
-	kubectl apply -n default -f ./manifests/consul.yaml
+	kubectl apply -n default -f ./manifests/consul.$(CONSUL_VERSION).yaml
 	kubectl wait --all --for=condition=ready pod -n default -l app=consul --timeout=180s
 
 .PHONY: consul-reboot
@@ -98,10 +100,10 @@ undeploy-fsm-bookwarehouse:
 	fsm namespace remove bookwarehouse || true
 
 .PHONY: deploy-consul-bookwarehouse
-deploy-consul-bookwarehouse: undeploy-consul-bookwarehouse
-	kubectl delete namespace bookwarehouse --ignore-not-found
-	kubectl create namespace bookwarehouse
-	fsm namespace add bookwarehouse
+deploy-consul-bookwarehouse:
+	#kubectl delete namespace bookwarehouse --ignore-not-found
+	#kubectl create namespace bookwarehouse
+	#fsm namespace add bookwarehouse
 	kubectl apply -n bookwarehouse -f ./manifests/consul/bookwarehouse-consul.yaml
 	sleep 2
 	kubectl wait --all --for=condition=ready pod -n bookwarehouse -l app=bookwarehouse --timeout=180s
