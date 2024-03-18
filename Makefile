@@ -100,7 +100,7 @@ undeploy-fsm-bookwarehouse:
 	fsm namespace remove bookwarehouse || true
 
 .PHONY: deploy-consul-bookwarehouse
-deploy-consul-bookwarehouse:
+deploy-consul-bookwarehouse: #undeploy-consul-bookwarehouse
 	#kubectl delete namespace bookwarehouse --ignore-not-found
 	#kubectl create namespace bookwarehouse
 	#fsm namespace add bookwarehouse
@@ -140,9 +140,9 @@ undeploy-consul-bookbuyer:
 	kubectl delete namespace bookbuyer --ignore-not-found
 
 .PHONY: deploy-eureka-bookwarehouse
-deploy-eureka-bookwarehouse: undeploy-eureka-bookwarehouse
-	kubectl delete namespace bookwarehouse --ignore-not-found
-	kubectl create namespace bookwarehouse
+deploy-eureka-bookwarehouse: #undeploy-eureka-bookwarehouse
+	#kubectl delete namespace bookwarehouse --ignore-not-found
+	#kubectl create namespace bookwarehouse
 	kubectl apply -n bookwarehouse -f ./manifests/eureka/bookwarehouse.yaml
 	sleep 2
 	kubectl wait --all --for=condition=ready pod -n bookwarehouse -l app=bookwarehouse --timeout=180s

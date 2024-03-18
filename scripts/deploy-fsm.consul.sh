@@ -92,6 +92,13 @@ spec:
     appendTags:
       - tag0
       - tag1
+    appendMetadatas:
+      - key: type
+        value: smart-gateway
+      - key: version
+        value: release
+      - key: zone
+        value: yinzhou
     allowK8sNamespaces:
       - '*'
     denyK8sNamespaces:
