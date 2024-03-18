@@ -23,21 +23,15 @@ make deploy-fsm
 
 make deploy-bookwarehouse
 
-export LOOPS=100
-make deploy-bookwarehouse-3k
-
-export LOOPS=100
-make undeploy-bookwarehouse-3k
-
-
-make build-fsm-cli
-
-make rebuild-fsm-bootstrap restart-fsm-bootstrap
+export LOOPS=100;make deploy-bookwarehouse-3k
+export LOOPS=100;make undeploy-bookwarehouse-3k
 
 make rebuild-fsm-connector restart-fsm-consul-connector
-
 make tail-fsm-consul-connector-logs
+
+make rebuild-fsm-connector restart-fsm-eureka-connector
+make tail-fsm-eureka-connector-logs
+
+make rebuild-fsm-connector restart-fsm-nacos-connector
+make tail-fsm-nacos-connector-logs
 ```
-
-
-
