@@ -30,3 +30,6 @@ spec:
           image: localhost:5000/consul:1.15.4
           ports:
             - containerPort: 8500
+          env:
+            - name: CONSUL_LOCAL_CONFIG
+              value: '{"limits": {"http_max_conns_per_client": 3000}}'
